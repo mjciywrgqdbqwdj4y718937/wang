@@ -1,0 +1,5534 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#050506">
+<title>妄</title>
+<style>
+/* film.css */
+/* ============================================================
+   第 0 天 · 临江三号院
+   视觉纪律：2.35:1 画幅 / 三层视差 / 一景一色 / 颗粒 + 暗角
+   所有尺寸以 --u 为单位（--u = 画框宽度的 1%），由 JS 注入
+   ============================================================ */
+
+:root {
+  --ink: #e9e3d7;
+  --ink-dim: #9c9488;
+  --warm: #d8b47e;
+  --black: #050506;
+  --u: 8px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+  font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "SimSun", serif;
+  -webkit-font-smoothing: antialiased;
+  color: var(--ink);
+  user-select: none;
+}
+
+#stage {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(ellipse at 50% 45%, #0a0a0c 0%, #000 78%);
+}
+
+/* ---------- 画框：宽银幕 ---------- */
+.frame {
+  position: relative;
+  width: min(100vw, calc(100dvh * 2.35));
+  aspect-ratio: 2.35 / 1;
+  max-height: 100dvh;
+  overflow: hidden;
+  background: #0b0b0c;
+  box-shadow: 0 0 calc(var(--u) * 6) rgba(0, 0, 0, .9);
+}
+
+/* ---------- 场景容器 ---------- */
+#scenes {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 900ms ease;
+}
+#scenes.on { opacity: 1; }
+
+.scene {
+  position: absolute;
+  inset: 0;
+  display: none;
+}
+.scene.live {
+  display: block;
+  opacity: 1;
+}
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+
+/* 每一层都撑出画框外一点，缓推/漂移时不出边 */
+.lyr {
+  position: absolute;
+  inset: -4%;
+  will-change: transform, filter;
+}
+
+/* ---------- 通用：光斑 / 暗角 / 颗粒 ---------- */
+.light-leak {
+  position: absolute;
+  inset: -6%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: .46;
+  filter: blur(calc(var(--u) * 1.4));
+  animation: breathe 12s ease-in-out infinite alternate;
+  z-index: 5;
+}
+.s-room .light-leak {
+  background: radial-gradient(ellipse 24% 46% at 34% 36%, rgba(170, 205, 235, .30), transparent 72%);
+}
+.s-hall .light-leak {
+  background: radial-gradient(ellipse 16% 34% at 50% 34%, rgba(255, 225, 180, .34), transparent 74%);
+}
+.s-empty .light-leak {
+  background: radial-gradient(ellipse 26% 40% at 50% 46%, rgba(160, 200, 235, .24), transparent 74%);
+}
+@keyframes breathe {
+  from { opacity: .34; transform: translate3d(-1%, 0, 0); }
+  to   { opacity: .50; transform: translate3d(1%, -1%, 0); }
+}
+
+.overlay-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 92% 108% at 50% 50%, transparent 62%, rgba(0,0,0,.38) 100%),
+    linear-gradient(180deg, rgba(0,0,0,.30) 0%, transparent 12%, transparent 88%, rgba(0,0,0,.36) 100%);
+  z-index: 8;
+}
+
+.overlay-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9;
+  opacity: .10;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/></filter><rect width='160' height='160' filter='url(%23n)' opacity='.55'/></svg>");
+  animation: grainShift 420ms steps(2) infinite;
+}
+@keyframes grainShift {
+  0% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(-1.5%, 1%, 0); }
+  100% { transform: translate3d(1%, -1.5%, 0); }
+}
+
+/* ============================================================
+   场景调色：一景一色
+   ============================================================ */
+.s-room  { filter: saturate(.82) contrast(1.08) brightness(1.02); }
+.s-hall  { filter: saturate(.52) contrast(1.16); }
+.s-hand  { filter: saturate(.74) contrast(1.14) brightness(1.06); }
+.s-empty { filter: saturate(.50) contrast(1.14); }
+
+/* ============================================================
+   镜头 1：房间
+   far = 窗外（装在窗洞里，负责视差与雨）
+   mid = 墙 + 桌 + 台灯（负责结构）
+   near = 前景暗框（负责纵深）
+   ============================================================ */
+.s-room .mid {
+  background:
+    linear-gradient(180deg, #2b2520 0%, #201b18 46%, #16120f 100%);
+}
+
+.s-room .win {
+  position: absolute;
+  left: 27%;
+  top: 17%;
+  width: 27%;
+  height: 42%;
+  overflow: hidden;
+  background: #0c1015;
+  border: calc(var(--u) * 1.0) solid #17120e;
+  box-shadow:
+    0 0 calc(var(--u) * 3.2) rgba(130, 172, 212, .16),
+    0 0 calc(var(--u) * .8) rgba(0, 0, 0, .8),
+    inset 0 0 calc(var(--u) * 3.5) rgba(0, 0, 0, .55);
+}
+
+.s-room .win .far {
+  position: absolute;
+  inset: -8%;
+  background: linear-gradient(180deg, #1a2531 0%, #2c4a63 44%, #1b2833 100%);
+}
+.s-room .win .far::after {      /* 雨：双层斜纹，破掉规律感 */
+  content: "";
+  position: absolute;
+  inset: -14%;
+  background-image:
+    repeating-linear-gradient(96deg, transparent 0 calc(var(--u) * 1.05), rgba(196, 220, 240, .30) calc(var(--u) * 1.05) calc(var(--u) * 1.13)),
+    repeating-linear-gradient(92deg, transparent 0 calc(var(--u) * 1.75), rgba(196, 220, 240, .16) calc(var(--u) * 1.75) calc(var(--u) * 1.83));
+  filter: blur(calc(var(--u) * .04));
+  animation: rain 1.05s linear infinite;
+}
+@keyframes rain {
+  from { transform: translate3d(0, -8%, 0); }
+  to   { transform: translate3d(-4%, 9%, 0); }
+}
+
+.s-room .win::after {           /* 窗格 */
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, transparent calc(50% - 1.2px), #100d0b calc(50% - 1.2px), #100d0b calc(50% + 1.2px), transparent calc(50% + 1.2px)),
+    linear-gradient(180deg, transparent calc(44% - 1.2px), #100d0b calc(44% - 1.2px), #100d0b calc(44% + 1.2px), transparent calc(44% + 1.2px));
+}
+
+.s-room .desk {
+  position: absolute;
+  left: 10%;
+  right: 34%;
+  bottom: 0;
+  height: 19%;
+  background: linear-gradient(180deg, #43372a 0%, #241d16 68%, #14110e 100%);
+  border-top: calc(var(--u) * .22) solid #5b4a35;
+  box-shadow: 0 calc(var(--u) * -1) calc(var(--u) * 2.4) rgba(0, 0, 0, .8);
+}
+
+.s-room .lamp {
+  position: absolute;
+  left: 13%;
+  bottom: 17%;
+  width: calc(var(--u) * 6.4);
+  height: calc(var(--u) * 5.6);
+}
+.s-room .lamp::before {          /* 灯罩剪影 + 光晕 */
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 64%;
+  background: linear-gradient(180deg, #806649 0%, #3b2e22 100%);
+  clip-path: polygon(22% 0, 78% 0, 100% 100%, 0 100%);
+  box-shadow:
+    0 0 calc(var(--u) * 2) rgba(255, 205, 140, .45),
+    0 0 calc(var(--u) * 9) rgba(255, 190, 120, .22);
+}
+
+.s-room .near {
+  background:
+    linear-gradient(90deg, rgba(6,6,8,.96) 0%, transparent 13%, transparent 87%, rgba(6,6,8,.96) 100%),
+    linear-gradient(180deg, rgba(6,6,8,.92) 0%, transparent 15%, transparent 85%, rgba(6,6,8,.94) 100%);
+  filter: blur(calc(var(--u) * .3));
+}
+
+/* ============================================================
+   镜头 2 / 4：走廊
+   ============================================================ */
+.s-hall .far {
+  background:
+    radial-gradient(ellipse 30% 50% at 50% 48%, rgba(255, 226, 176, .26) 0%, transparent 76%),
+    radial-gradient(ellipse 36% 14% at 50% 80%, rgba(255, 226, 176, .22) 0%, transparent 76%),
+    linear-gradient(180deg, #14181e 0%, #1b2128 44%, #0b0d10 100%);
+}
+
+.s-hall .doorframe {             /* 门板：让那道光有出处 */
+  position: absolute;
+  left: 50%;
+  top: 25%;
+  width: 12.5%;
+  height: 54%;
+  transform: translateX(-50%);
+  border: 1px solid rgba(216, 196, 162, .07);
+  background: linear-gradient(180deg, rgba(28, 32, 39, .62), rgba(14, 16, 20, .82));
+  box-shadow: 0 0 3.5vw rgba(0, 0, 0, .85);
+  z-index: 1;
+}
+
+.s-hall .doorlight {             /* 门缝：走廊里唯一的光源 */
+  position: absolute;
+  left: 50%;
+  top: 26%;
+  width: 0.55%;
+  height: 52%;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 240, 205, .16) 0%,
+    rgba(255, 240, 208, .88) 18%,
+    rgba(255, 240, 208, .88) 78%,
+    rgba(255, 240, 205, .14) 100%
+  );
+  box-shadow:
+    0 0 2.2vw 0.30vw rgba(255, 226, 178, .40),
+    0 0 7vw 2vw rgba(255, 218, 162, .16);
+  z-index: 2;
+}
+.s-hall .far::after {            /* 地面光斑 */
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 74%;
+  width: 22%;
+  height: 9%;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at center, rgba(255, 228, 180, .22) 0%, transparent 72%);
+  filter: blur(calc(var(--u) * 1.4));
+}
+
+.s-hall .mid {                   /* 两侧墙 + 地面反光 */
+  background:
+    linear-gradient(180deg, transparent 60%, rgba(214, 192, 152, .12) 86%, transparent 100%),
+    linear-gradient(90deg, #171a1f 0%, rgba(23,26,31,.55) 17%, transparent 33%, transparent 67%, rgba(23,26,31,.55) 83%, #171a1f 100%);
+}
+.s-hall .mid::before {           /* 地面线 */
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 61%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 4%, rgba(222, 202, 162, .26) 50%, transparent 96%);
+}
+
+.s-hall .near {                  /* 门框 */
+  background:
+    linear-gradient(90deg, rgba(5,5,7,.98) 0%, rgba(12,13,16,.9) 6%, transparent 9%, transparent 91%, rgba(12,13,16,.9) 94%, rgba(5,5,7,.98) 100%),
+    linear-gradient(180deg, rgba(5,5,7,.95) 0%, transparent 10%, transparent 90%, rgba(5,5,7,.95) 100%);
+  filter: blur(calc(var(--u) * .24));
+}
+
+/* 走廊里那个停下又走的影子 */
+.s-hall .shadow {
+  position: absolute;
+  left: 50%;
+  bottom: 26%;
+  width: calc(var(--u) * 6);
+  height: calc(var(--u) * 19);
+  transform: translateX(-50%);
+  background:
+    radial-gradient(ellipse 46% 42% at 50% 16%, rgba(10,10,12,.96), transparent 72%),
+    radial-gradient(ellipse 34% 60% at 50% 60%, rgba(10,10,12,.88), transparent 74%);
+  filter: blur(calc(var(--u) * .42));
+  opacity: 0;
+  z-index: 4;
+}
+.s-hall .shadow.on { animation: shadowIn 7s ease-in-out forwards; }
+@keyframes shadowIn {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(7%); }
+  26%  { opacity: .96; transform: translateX(-50%) translateY(0); }
+  64%  { opacity: .96; transform: translateX(-50%) translateY(0); }
+  100% { opacity: 0; transform: translateX(-74%) translateY(2%); }
+}
+
+/* ============================================================
+   镜头 3：门缝里的手（只有手，不给脸）
+   黑场 + 一道门缝 + 缝里一个不成形的手影
+   ============================================================ */
+.s-hand { background: #050506; }
+
+.s-hand .slit {
+  position: absolute;
+  left: 50%;
+  top: 10%;
+  width: 4.8%;
+  height: 82%;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 240, 206, 0) 0%,
+    rgba(255, 240, 206, .52) 16%,
+    rgba(255, 244, 216, .82) 50%,
+    rgba(255, 240, 206, .52) 84%,
+    rgba(255, 240, 206, 0) 100%
+  );
+  box-shadow:
+    0 0 5vw 1vw rgba(255, 226, 178, .22),
+    0 0 16vw 5vw rgba(255, 214, 160, .09);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 11%, #000 89%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 11%, #000 89%, transparent 100%);
+}
+
+.s-hand .hand-blob {
+  position: absolute;
+  left: 50%;
+  top: 76%;
+  width: 8.5%;
+  height: 5.5%;
+  transform: translate(-50%, -50%) rotate(-4deg);
+  background: #000;
+  filter: blur(calc(var(--u) * .9));
+  mix-blend-mode: multiply;
+  opacity: .96;
+  animation: handMove 11s ease-in-out infinite alternate;
+}
+.s-hand .hand-blob.b2 {
+  top: 70%;
+  width: 1.7%;
+  height: 5%;
+  transform: translate(-50%, -50%) rotate(7deg);
+  filter: blur(calc(var(--u) * .55));
+  animation: handFade 7s ease-in-out infinite alternate;
+}
+.s-hand .hand-blob.b3 {
+  top: 69%;
+  width: 1.5%;
+  height: 4.4%;
+  transform: translate(-50%, -50%) rotate(-6deg) translateX(1.6%);
+  filter: blur(calc(var(--u) * .55));
+  opacity: .8;
+  animation: handFade 9s ease-in-out infinite alternate-reverse;
+}
+@keyframes handMove {
+  from { transform: translate(-50%, -50%) rotate(-13deg) translateY(0); }
+  to   { transform: translate(-50%, -53%) rotate(-10deg) translateY(-1.5%); }
+}
+@keyframes handFade {
+  from { opacity: .55; }
+  to   { opacity: .95; }
+}
+
+/* ============================================================
+   镜头 5：空镜（窗与雨）
+   ============================================================ */
+.s-empty {
+  background: linear-gradient(180deg, #111820 0%, #1d2b38 46%, #0d1218 100%);
+}
+.s-empty .far {
+  background: linear-gradient(180deg, #16202b 0%, #24384a 52%, #131b23 100%);
+}
+.s-empty .win {
+  position: absolute;
+  left: 31%;
+  top: 21%;
+  width: 38%;
+  height: 54%;
+  overflow: hidden;
+  background: linear-gradient(180deg, #3d5d76 0%, #27414f 100%);
+  border: calc(var(--u) * .55) solid #0a0a0b;
+  box-shadow: 0 0 calc(var(--u) * 6) rgba(120, 165, 205, .16);
+}
+.s-empty .win::after {
+  content: "";
+  position: absolute;
+  inset: -14%;
+  background-image:
+    repeating-linear-gradient(96deg, transparent 0 calc(var(--u) * 1.0), rgba(198, 222, 240, .34) calc(var(--u) * 1.0) calc(var(--u) * 1.08)),
+    repeating-linear-gradient(92deg, transparent 0 calc(var(--u) * 1.6), rgba(198, 222, 240, .18) calc(var(--u) * 1.6) calc(var(--u) * 1.68));
+  animation: rain 1.0s linear infinite;
+}
+.s-empty .cross {
+  position: absolute;
+  left: calc(31% + 19%);
+  top: 21%;
+  width: calc(var(--u) * .6);
+  height: 54%;
+  background: #08080a;
+}
+.s-empty .walker {
+  position: absolute;
+  bottom: 24%;
+  left: -8%;
+  width: calc(var(--u) * 3.6);
+  height: calc(var(--u) * 11);
+  background:
+    radial-gradient(ellipse 46% 34% at 50% 16%, rgba(4,4,6,.96), transparent 70%),
+    radial-gradient(ellipse 34% 56% at 50% 62%, rgba(4,4,6,.9), transparent 72%);
+  filter: blur(calc(var(--u) * .46));
+  opacity: 0;
+}
+.s-empty .walker.on { animation: walkBy 9s linear forwards; }
+@keyframes walkBy {
+  0%   { opacity: 0; transform: translateX(0); }
+  12%  { opacity: .9; }
+  88%  { opacity: .9; }
+  100% { opacity: 0; transform: translateX(calc(var(--u) * 120)); }
+}
+
+/* ============================================================
+   文字层
+   ============================================================ */
+.caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 48%;
+  transform: translateY(-50%);
+  text-align: center;
+  font-size: calc(var(--u) * 2.05);
+  letter-spacing: .16em;
+  color: var(--ink);
+  opacity: 0;
+  transition: opacity 900ms ease;
+  z-index: 20;
+  text-shadow: 0 0 calc(var(--u) * 2) rgba(0,0,0,.95);
+  padding: 0 8%;
+  line-height: 1.95;
+}
+.caption.on { opacity: 1; }
+
+.caption.small {
+  font-size: calc(var(--u) * 1.28);
+  color: var(--ink-dim);
+  letter-spacing: .32em;
+}
+
+.dialogue {
+  position: absolute;
+  left: 50%;
+  bottom: 14%;
+  transform: translateX(-50%);
+  width: 76%;
+  text-align: center;
+  font-size: calc(var(--u) * 1.58);
+  line-height: 1.95;
+  letter-spacing: .05em;
+  color: var(--ink);
+  text-shadow: 0 0 calc(var(--u) * 1.8) rgba(0,0,0,1);
+  z-index: 20;
+  min-height: calc(var(--u) * 4);
+}
+.dialogue .line { display: block; opacity: 0; animation: lineIn 700ms ease forwards; }
+@keyframes lineIn {
+  from { opacity: 0; transform: translateY(calc(var(--u) * .4)); }
+  to   { opacity: 1; transform: none; }
+}
+.dialogue .line .who {
+  color: var(--warm);
+  letter-spacing: .2em;
+  margin-right: .6em;
+  font-size: .86em;
+}
+
+.hud {
+  position: absolute;
+  left: calc(var(--u) * 3.2);
+  top: calc(var(--u) * 2.6);
+  font-size: calc(var(--u) * .95);
+  letter-spacing: .34em;
+  color: rgba(233, 227, 215, .48);
+  z-index: 20;
+  opacity: 0;
+  transition: opacity 700ms ease;
+}
+.hud.on { opacity: 1; }
+
+.life {
+  position: absolute;
+  right: calc(var(--u) * 3.2);
+  bottom: calc(var(--u) * 2.4);
+  font-size: calc(var(--u) * .80);
+  letter-spacing: .12em;
+  color: rgba(233, 227, 215, .32);
+  text-align: right;
+  line-height: 1.95;
+  z-index: 20;
+  opacity: 0;
+  transition: opacity 900ms ease;
+  max-width: 42%;
+}
+.life.on { opacity: 1; }
+
+/* ---------- 灵感卡 ---------- */
+.cards {
+  position: absolute;
+  left: 50%;
+  bottom: 27%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: calc(var(--u) * .9);
+  z-index: 22;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 500ms ease;
+}
+.cards.on { opacity: 1; pointer-events: auto; }
+.cards button {
+  font-family: inherit;
+  font-size: calc(var(--u) * .95);
+  letter-spacing: .1em;
+  color: rgba(233, 227, 215, .80);
+  background: rgba(16, 16, 18, .58);
+  border: 1px solid rgba(233, 227, 215, .20);
+  padding: calc(var(--u) * .55) calc(var(--u) * 1.15);
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: all 220ms ease;
+  white-space: nowrap;
+}
+.cards button:hover {
+  color: #fff;
+  border-color: rgba(216, 180, 126, .62);
+  background: rgba(44, 36, 26, .78);
+}
+
+/* ---------- 自由输入 ---------- */
+.inputbar {
+  position: absolute;
+  left: 50%;
+  bottom: 9%;
+  transform: translateX(-50%);
+  width: 56%;
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * .8);
+  border-bottom: 1px solid rgba(233, 227, 215, .24);
+  padding-bottom: calc(var(--u) * .5);
+  z-index: 22;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 500ms ease;
+}
+.inputbar.on { opacity: 1; pointer-events: auto; }
+.inputbar input {
+  flex: 1;
+  background: none;
+  border: 0;
+  outline: 0;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: calc(var(--u) * 1.30);
+  letter-spacing: .06em;
+  caret-color: var(--warm);
+}
+.inputbar input::placeholder { color: rgba(233, 227, 215, .30); }
+.inputbar .key {
+  font-size: calc(var(--u) * .76);
+  letter-spacing: .2em;
+  color: rgba(233, 227, 215, .32);
+  white-space: nowrap;
+}
+
+/* ---------- 开场 ---------- */
+.start {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: calc(var(--u) * 1.1);
+  background: #050506;
+  z-index: 40;
+  transition: opacity 1200ms ease;
+}
+.start.off { opacity: 0; pointer-events: none; }
+
+.start__title {
+  font-size: calc(var(--u) * 3.4);
+  letter-spacing: .5em;
+  color: var(--ink);
+  text-indent: .5em;
+  opacity: 1;
+  animation: titleIn 2.4s ease;
+}
+@keyframes titleIn {
+  from { opacity: 0; filter: blur(9px); }
+  to   { opacity: 1; filter: none; }
+}
+
+.start__sub {
+  font-size: calc(var(--u) * 1.02);
+  letter-spacing: .34em;
+  color: rgba(233, 227, 215, .44);
+}
+.start__btn {
+  margin-top: calc(var(--u) * 1.6);
+  font-family: inherit;
+  font-size: calc(var(--u) * 1.12);
+  letter-spacing: .5em;
+  text-indent: .5em;
+  color: var(--ink);
+  background: none;
+  border: 1px solid rgba(233, 227, 215, .28);
+  padding: calc(var(--u) * .8) calc(var(--u) * 3.4);
+  cursor: pointer;
+  transition: all 280ms ease;
+}
+.start__btn:hover { border-color: var(--warm); color: var(--warm); background: rgba(216, 180, 126, .06); }
+.start__seed {
+  margin-top: calc(var(--u) * 1.2);
+  font-size: calc(var(--u) * .70);
+  letter-spacing: .18em;
+  color: rgba(233, 227, 215, .24);
+}
+.start__hint {
+  position: absolute;
+  bottom: calc(var(--u) * 3);
+  font-size: calc(var(--u) * .74);
+  letter-spacing: .18em;
+  color: rgba(233, 227, 215, .28);
+}
+
+/* ---------- 结尾卡 ---------- */
+.end-card {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: calc(var(--u) * 1.4);
+  background: rgba(4, 4, 5, .95);
+  z-index: 30;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1400ms ease;
+  padding: 0 12%;
+  text-align: center;
+}
+.end-card.on { opacity: 1; pointer-events: auto; }
+.end-card .epitaph {
+  font-size: calc(var(--u) * 1.62);
+  line-height: 2.15;
+  letter-spacing: .09em;
+  color: var(--ink);
+}
+.end-card .trace {
+  font-size: calc(var(--u) * .90);
+  line-height: 2;
+  letter-spacing: .14em;
+  color: rgba(216, 180, 126, .70);
+  max-width: 78%;
+}
+.end-card .again {
+  margin-top: calc(var(--u) * 1.2);
+  font-family: inherit;
+  font-size: calc(var(--u) * .98);
+  letter-spacing: .42em;
+  text-indent: .42em;
+  color: rgba(233, 227, 215, .84);
+  background: none;
+  border: 1px solid rgba(233, 227, 215, .24);
+  padding: calc(var(--u) * .72) calc(var(--u) * 2.8);
+  cursor: pointer;
+  transition: all 280ms ease;
+}
+.end-card .again:hover { border-color: var(--warm); color: var(--warm); }
+
+/* ---------- 转场黑场 ---------- */
+.flash {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  z-index: 25;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 620ms ease;
+}
+.flash.on { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .light-leak, .overlay-grain,
+  .s-room .win .far::after, .s-empty .win::after { animation: none !important; }
+}
+
+</style>
+<style>
+/* play.css */
+/* ============================================================
+   play.css · 可玩版追加样式
+   覆盖：状态条、文本面板、热区、街道/便利店/家、开场与结尾新结构
+   ============================================================ */
+
+/* ---------- 状态条 ---------- */
+.stat {
+  position: absolute;
+  z-index: 16;
+  font-size: calc(var(--u) * 0.92);
+  letter-spacing: 0.26em;
+  color: rgba(233, 227, 215, 0.52);
+  pointer-events: none;
+  text-shadow: 0 0 calc(var(--u) * 1.2) rgba(0, 0, 0, 0.9);
+}
+.stat--tl { left: calc(var(--u) * 3); top: calc(var(--u) * 2.4); }
+.stat--tr {
+  right: calc(var(--u) * 3);
+  top: calc(var(--u) * 2.4);
+  text-align: right;
+  line-height: 2;
+  letter-spacing: 0.12em;
+  font-size: calc(var(--u) * 0.82);
+  color: rgba(233, 227, 215, 0.42);
+}
+.stat__rel { color: rgba(216, 180, 126, 0.68); }
+
+/* ---------- 文本面板 ---------- */
+.panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 34%;
+  z-index: 14;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 500ms ease;
+  background: linear-gradient(180deg, transparent 0%, rgba(4, 4, 6, 0.55) 34%, rgba(4, 4, 6, 0.88) 100%);
+}
+.panel.on { opacity: 1; }
+
+.panel__inner {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: calc(var(--u) * 7.2);
+  max-height: 84%;
+  overflow-y: auto;
+  pointer-events: auto;
+  scrollbar-width: none;
+}
+.panel__inner::-webkit-scrollbar { display: none; }
+
+.panel .ln {
+  margin: 0 0 calc(var(--u) * 1.1);
+  font-size: calc(var(--u) * 1.30);
+  line-height: 1.95;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  text-shadow: 0 0 calc(var(--u) * 1.4) rgba(0, 0, 0, 1);
+  opacity: 0;
+  animation: lnIn 520ms ease forwards;
+}
+@keyframes lnIn {
+  from { opacity: 0; transform: translateY(calc(var(--u) * 0.3)); }
+  to { opacity: 1; transform: none; }
+}
+.panel .ln:last-child { color: #f2ece0; }
+
+/* ---------- 热区 ---------- */
+#hotspots {
+  position: absolute;
+  inset: 0;
+  z-index: 11;
+}
+#hotspots.dim { pointer-events: none; }
+
+.hs {
+  position: absolute;
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 0;
+  cursor: pointer;
+  transition: border-color 200ms ease, background 200ms ease;
+  border-radius: 2px;
+}
+.hs:hover,
+.hs:focus-visible {
+  border-color: rgba(216, 180, 126, 0.55);
+  background: rgba(216, 180, 126, 0.06);
+  outline: none;
+}
+.hs span {
+  position: absolute;
+  left: 50%;
+  bottom: -1.9em;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-family: inherit;
+  font-size: calc(var(--u) * 0.86);
+  letter-spacing: 0.16em;
+  color: rgba(233, 227, 215, 0.92);
+  background: rgba(8, 8, 10, 0.78);
+  border: 1px solid rgba(216, 180, 126, 0.24);
+  padding: calc(var(--u) * 0.26) calc(var(--u) * 0.62);
+  opacity: 0;
+  transition: opacity 180ms ease;
+  pointer-events: none;
+}
+.hs:hover span,
+.hs:focus-visible span { opacity: 1; }
+
+/* ---------- 开场（新结构） ---------- */
+.start {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: calc(var(--u) * 0.9);
+  padding: 0 10%;
+  text-align: center;
+}
+.start__kicker {
+  font-size: calc(var(--u) * 0.86);
+  letter-spacing: 0.6em;
+  text-indent: 0.6em;
+  color: rgba(216, 180, 126, 0.62);
+}
+.start__name {
+  font-size: calc(var(--u) * 3.0);
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
+  color: var(--ink);
+  animation: titleIn 2.2s ease forwards;
+}
+.start__line {
+  font-size: calc(var(--u) * 1.0);
+  letter-spacing: 0.2em;
+  color: rgba(233, 227, 215, 0.52);
+}
+.start__wound {
+  margin-top: calc(var(--u) * 0.8);
+  max-width: 62%;
+  font-size: calc(var(--u) * 1.06);
+  line-height: 2;
+  letter-spacing: 0.08em;
+  color: rgba(233, 227, 215, 0.78);
+}
+.start__wound::before {
+  content: "「";
+  color: rgba(216, 180, 126, 0.5);
+}
+.start__wound::after {
+  content: "」";
+  color: rgba(216, 180, 126, 0.5);
+}
+
+/* ---------- 结尾（新结构） ---------- */
+.end-card .end__title {
+  font-size: calc(var(--u) * 1.7);
+  letter-spacing: 0.4em;
+  text-indent: 0.4em;
+  color: var(--ink);
+}
+.end-card .end__sub {
+  font-size: calc(var(--u) * 0.98);
+  line-height: 2.1;
+  letter-spacing: 0.1em;
+  color: rgba(233, 227, 215, 0.5);
+  white-space: pre-line;
+}
+.end-card .epitaph {
+  margin-top: calc(var(--u) * 0.6);
+  font-size: calc(var(--u) * 1.55);
+  line-height: 2.1;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+}
+
+/* ============================================================
+   房间：加一扇门
+   ============================================================ */
+.s-room .doorpanel {
+  position: absolute;
+  right: 4%;
+  top: 18%;
+  width: 19%;
+  height: 74%;
+  background: linear-gradient(90deg, #171310 0%, #241d17 40%, #1a1512 100%);
+  border: 1px solid rgba(90, 74, 55, 0.28);
+  box-shadow: inset calc(var(--u) * -1) 0 calc(var(--u) * 2) rgba(0, 0, 0, 0.8);
+}
+.s-room .doorpanel::after {
+  content: "";
+  position: absolute;
+  left: 12%;
+  top: 48%;
+  width: calc(var(--u) * 0.7);
+  height: calc(var(--u) * 0.7);
+  border-radius: 50%;
+  background: #6b5638;
+  box-shadow: 0 0 calc(var(--u) * 1.2) rgba(255, 200, 130, 0.25);
+}
+
+/* ============================================================
+   走廊：隔壁的门、三楼的门
+   ============================================================ */
+.s-hall .neighbor-door {
+  position: absolute;
+  left: 1%;
+  top: 24%;
+  width: 13%;
+  height: 58%;
+  background: linear-gradient(90deg, #0c0e11 0%, #16181c 100%);
+  border-right: 1px solid rgba(180, 170, 150, 0.08);
+}
+
+/* ============================================================
+   街道
+   ============================================================ */
+.s-street {
+  background: linear-gradient(180deg, #0c1218 0%, #16222e 46%, #070a0e 100%);
+}
+.s-street .far {
+  background: linear-gradient(180deg, #101923 0%, #1c2c3a 44%, #090d12 100%);
+}
+.s-street .far::after {
+  content: "";
+  position: absolute;
+  inset: -10%;
+  background-image:
+    repeating-linear-gradient(96deg, transparent 0 calc(var(--u) * 2.6), rgba(196, 220, 240, 0.17) calc(var(--u) * 2.6) calc(var(--u) * 2.72)),
+    repeating-linear-gradient(92deg, transparent 0 calc(var(--u) * 4.1), rgba(196, 220, 240, 0.09) calc(var(--u) * 4.1) calc(var(--u) * 4.2));
+  animation: rain 1.3s linear infinite;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 58%, transparent 76%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 58%, transparent 76%);
+}
+.s-street .lamp-post {
+  position: absolute;
+  left: 27.4%;
+  top: 6%;
+  width: calc(var(--u) * 0.5);
+  height: 56%;
+  background: #14171b;
+}
+.s-street .lamp-post::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: calc(var(--u) * 4.2);
+  height: calc(var(--u) * 0.9);
+  transform: translateX(-50%);
+  background: #14171b;
+  border-radius: calc(var(--u) * 0.4);
+}
+.s-street .lamp-post::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: calc(var(--u) * 0.9);
+  width: calc(var(--u) * 2.6);
+  height: calc(var(--u) * 1.1);
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at 50% 0%, rgba(255, 240, 200, 0.95), rgba(255, 226, 170, 0.18) 60%, transparent 78%);
+  filter: blur(calc(var(--u) * 0.22));
+}
+.s-street .lamp-pool {
+  position: absolute;
+  left: 16%;
+  top: 52%;
+  width: 24%;
+  height: 34%;
+  background: radial-gradient(ellipse at 50% 0%, rgba(255, 232, 180, 0.26), rgba(255, 220, 160, 0.06) 46%, transparent 72%);
+  filter: blur(calc(var(--u) * 1.6));
+  pointer-events: none;
+}
+.s-street .board {
+  position: absolute;
+  left: 9%;
+  top: 30%;
+  width: 17%;
+  height: 34%;
+  background: linear-gradient(180deg, #262a2f 0%, #14171a 100%);
+  border: 1px solid rgba(200, 190, 170, 0.10);
+  box-shadow: 0 calc(var(--u) * 0.6) calc(var(--u) * 2) rgba(0, 0, 0, 0.8);
+}
+.s-street .board::before {
+  content: "";
+  position: absolute;
+  left: 14%;
+  top: 12%;
+  width: 42%;
+  height: 24%;
+  background: rgba(226, 220, 206, 0.17);
+  box-shadow: 0 0 calc(var(--u) * 0.4) rgba(0, 0, 0, 0.6);
+}
+.s-street .board::after {
+  content: "";
+  position: absolute;
+  left: 24%;
+  top: 46%;
+  width: 50%;
+  height: 32%;
+  background: rgba(226, 220, 206, 0.10);
+  transform: rotate(-2deg);
+  box-shadow: 0 0 calc(var(--u) * 0.4) rgba(0, 0, 0, 0.6);
+}
+.s-street .figure {
+  position: absolute;
+  left: 67%;
+  top: 42%;
+  width: 9%;
+  height: 38%;
+  background:
+    radial-gradient(ellipse 40% 26% at 50% 12%, rgba(3, 3, 5, 0.95), transparent 68%),
+    radial-gradient(ellipse 30% 54% at 50% 60%, rgba(3, 3, 5, 0.88), transparent 70%);
+  filter: blur(calc(var(--u) * 0.35));
+  opacity: 0.92;
+}
+
+/* ============================================================
+   便利店
+   ============================================================ */
+.s-shop {
+  background: linear-gradient(180deg, #131a20 0%, #1e2831 46%, #0c1014 100%);
+  filter: saturate(0.5) contrast(1.08) brightness(1.1);
+}
+.s-shop .far {
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 4%, rgba(210, 236, 255, 0.16), transparent 72%),
+    linear-gradient(180deg, #1e2b36 0%, #2a3b47 44%, #121a21 100%);
+}
+.s-shop .tube {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: 5%;
+  height: calc(var(--u) * 0.8);
+  background: linear-gradient(90deg, transparent 0%, rgba(232, 246, 255, 0.95) 16%, rgba(232, 246, 255, 0.95) 84%, transparent 100%);
+  box-shadow: 0 0 calc(var(--u) * 9) calc(var(--u) * 3) rgba(190, 224, 255, 0.22);
+}
+.s-shop .shelf {
+  position: absolute;
+  left: 6%;
+  top: 32%;
+  width: 32%;
+  height: 42%;
+  background:
+    linear-gradient(180deg,
+      transparent 0 21%, rgba(228, 242, 252, 0.16) 21% 22.2%,
+      transparent 22.2% 44%, rgba(228, 242, 252, 0.16) 44% 45.2%,
+      transparent 45.2% 67%, rgba(228, 242, 252, 0.16) 67% 68.2%,
+      transparent 68.2% 100%),
+    linear-gradient(180deg, rgba(54, 66, 78, 0.72) 0%, rgba(20, 26, 32, 0.9) 100%);
+  border: 1px solid rgba(200, 220, 235, 0.10);
+  box-shadow: inset 0 0 calc(var(--u) * 3) rgba(0, 0, 0, 0.6);
+}
+.s-shop .shelf::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(ellipse 3.2% 1.6% at 12% 16%, rgba(224, 186, 120, 0.42), transparent 70%),
+    radial-gradient(ellipse 3.2% 1.6% at 30% 16%, rgba(210, 120, 110, 0.36), transparent 70%),
+    radial-gradient(ellipse 3.2% 1.6% at 66% 38%, rgba(180, 210, 230, 0.34), transparent 70%),
+    radial-gradient(ellipse 3.2% 1.6% at 22% 60%, rgba(224, 186, 120, 0.30), transparent 70%),
+    radial-gradient(ellipse 3.2% 1.6% at 74% 82%, rgba(200, 220, 240, 0.28), transparent 70%);
+}
+.s-shop .counter {
+  position: absolute;
+  left: 50%;
+  top: 66%;
+  width: 42%;
+  height: 14%;
+  background: linear-gradient(180deg, #3a444e 0%, #1a2026 100%);
+  border-top: 1px solid rgba(200, 220, 235, 0.16);
+  box-shadow: 0 calc(var(--u) * -0.6) calc(var(--u) * 2) rgba(0, 0, 0, 0.7);
+}
+.s-shop .boss {
+  position: absolute;
+  left: 63%;
+  top: 34%;
+  width: 13%;
+  height: 36%;
+  background:
+    radial-gradient(ellipse 42% 24% at 50% 10%, rgba(6, 8, 10, 0.92), transparent 68%),
+    radial-gradient(ellipse 34% 56% at 50% 62%, rgba(6, 8, 10, 0.86), transparent 70%);
+  filter: blur(calc(var(--u) * 0.3));
+}
+.s-shop .boss {
+  position: absolute;
+  left: 63%;
+  top: 34%;
+  width: 13%;
+  height: 36%;
+  background:
+    radial-gradient(ellipse 42% 24% at 50% 10%, rgba(6, 8, 10, 0.92), transparent 68%),
+    radial-gradient(ellipse 34% 56% at 50% 62%, rgba(6, 8, 10, 0.86), transparent 70%);
+  filter: blur(calc(var(--u) * 0.3));
+}
+
+/* ============================================================
+   母亲家
+   ============================================================ */
+.s-home {
+  background: linear-gradient(180deg, #17110d 0%, #211811 46%, #0b0806 100%);
+  filter: saturate(0.9) contrast(1.12) brightness(0.98);
+}
+.s-home .far {
+  background:
+    radial-gradient(ellipse 40% 44% at 64% 18%, rgba(255, 206, 138, 0.12), transparent 72%),
+    linear-gradient(180deg, #1e1610 0%, #241a13 46%, #0e0a07 100%);
+}
+.s-home .warmlamp {
+  position: absolute;
+  left: 63.4%;
+  top: 4%;
+  width: calc(var(--u) * 0.3);
+  height: 13%;
+  background: #241c14;
+}
+.s-home .warmlamp::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: calc(var(--u) * 2.0);
+  height: calc(var(--u) * 1.5);
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at 50% 10%, rgba(255, 228, 176, 0.9), rgba(255, 200, 130, 0.22) 48%, transparent 74%);
+  filter: blur(calc(var(--u) * 0.3));
+}
+.s-home .mother-figure {
+  position: absolute;
+  left: 58%;
+  top: 34%;
+  width: 14%;
+  height: 30%;
+  background:
+    radial-gradient(ellipse 34% 30% at 50% 16%, rgba(8, 6, 4, 0.94), transparent 70%),
+    radial-gradient(ellipse 40% 54% at 50% 62%, rgba(8, 6, 4, 0.88), transparent 72%);
+  filter: blur(calc(var(--u) * 0.28));
+}
+.s-home .table {
+  position: absolute;
+  left: 22%;
+  bottom: 28%;
+  width: 38%;
+  height: 13%;
+  background: linear-gradient(180deg, #4f3d2a 0%, #2c2118 70%, #1a1410 100%);
+  border-top: 1px solid #634c34;
+  box-shadow: 0 calc(var(--u) * -0.8) calc(var(--u) * 2.4) rgba(0, 0, 0, 0.75);
+}
+.s-home .bowls {
+  position: absolute;
+  left: 26%;
+  bottom: 40%;
+  width: 26%;
+  height: 6%;
+  background:
+    radial-gradient(ellipse 20% 100% at 20% 50%, rgba(232, 222, 202, 0.72), transparent 68%),
+    radial-gradient(ellipse 20% 100% at 70% 50%, rgba(232, 222, 202, 0.5), transparent 68%);
+}
+.s-home .locked-door {
+  position: absolute;
+  left: 4%;
+  top: 24%;
+  width: 13%;
+  height: 48%;
+  background: linear-gradient(90deg, #1c1610 0%, #241c14 100%);
+  border: 1px solid rgba(90, 74, 55, 0.24);
+}
+.s-home .locked-door::after {
+  content: "";
+  position: absolute;
+  left: 78%;
+  top: 50%;
+  width: calc(var(--u) * 0.55);
+  height: calc(var(--u) * 0.55);
+  border-radius: 50%;
+  background: #4a3a26;
+}
+
+</style>
+<style>
+/* world.css */
+/* ============================================================
+   world.css · 顶部状态条 / 出口 / 开场统计
+   ============================================================ */
+
+.topbar {
+  position: absolute;
+  left: calc(var(--u) * 3);
+  right: calc(var(--u) * 3);
+  top: calc(var(--u) * 2.4);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  z-index: 16;
+  pointer-events: none;
+  font-size: calc(var(--u) * 0.86);
+  letter-spacing: 0.24em;
+  color: rgba(233, 227, 215, 0.48);
+  text-shadow: 0 0 calc(var(--u) * 1.2) rgba(0, 0, 0, 0.9);
+}
+.topbar__mid {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  letter-spacing: 0.4em;
+  color: rgba(233, 227, 215, 0.32);
+}
+#topClue {
+  color: rgba(216, 180, 126, 0.74);
+  text-align: right;
+}
+
+.exits {
+  position: absolute;
+  right: calc(var(--u) * 3);
+  top: calc(var(--u) * 6.2);
+  display: flex;
+  gap: calc(var(--u) * 0.55);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  max-width: 46%;
+  z-index: 15;
+}
+.exit {
+  font-family: inherit;
+  font-size: calc(var(--u) * 0.86);
+  letter-spacing: 0.16em;
+  color: rgba(233, 227, 215, 0.62);
+  background: rgba(8, 8, 10, 0.62);
+  border: 1px solid rgba(233, 227, 215, 0.16);
+  padding: calc(var(--u) * 0.4) calc(var(--u) * 0.85);
+  cursor: pointer;
+  transition: all 180ms ease;
+  backdrop-filter: blur(3px);
+}
+.exit:hover {
+  color: var(--warm);
+  border-color: rgba(216, 180, 126, 0.6);
+  background: rgba(34, 28, 20, 0.8);
+}
+
+.start__kicker,
+.start__stat {
+  font-size: calc(var(--u) * 0.8);
+  letter-spacing: 0.3em;
+  color: rgba(216, 180, 126, 0.6);
+}
+.start__stat {
+  color: rgba(233, 227, 215, 0.32);
+  letter-spacing: 0.14em;
+  margin-top: calc(var(--u) * 0.5);
+}
+
+</style>
+<style>
+/* scenes2.css */
+/* ============================================================
+   scenes2.css · 六个新场景
+   规矩：一景一个光源，三层纵深（远景/中景/前景遮挡），
+        所有形状只用渐变与伪元素，不加贴图。
+   ============================================================ */
+
+/* ============================================================
+   诊所 · 惨白走廊
+   ============================================================ */
+.s-clinic { background: #0f1418; filter: saturate(0.34) contrast(1.14) brightness(1.02); }
+.s-clinic .far {
+  background:
+    radial-gradient(ellipse 12% 34% at 50% 44%, rgba(226, 242, 255, 0.55), transparent 70%),
+    radial-gradient(ellipse 30% 30% at 50% 60%, rgba(200, 226, 245, 0.10), transparent 74%),
+    linear-gradient(180deg, #1b232a 0%, #202a31 44%, #0c1115 100%);
+}
+.s-clinic .doorway {
+  position: absolute;
+  left: 44%;
+  top: 26%;
+  width: 12%;
+  height: 46%;
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.22) 0 1.8%, transparent 1.8% 11%),
+    linear-gradient(180deg, #2a333a 0%, #161d22 55%, #0b0f12 100%);
+  border: 1px solid rgba(210, 235, 250, 0.16);
+  box-shadow:
+    0 0 calc(var(--u) * 3) rgba(0, 0, 0, 0.8),
+    inset 0 0 calc(var(--u) * 2.4) rgba(0, 0, 0, 0.6);
+}
+.s-clinic .doorway::before {
+  content: "";
+  position: absolute;
+  left: 16%;
+  top: 10%;
+  width: 26%;
+  height: 8%;
+  background: rgba(214, 236, 250, 0.14);
+  border: 1px solid rgba(214, 236, 250, 0.10);
+}
+.s-clinic .doorway::after {
+  content: "";
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  bottom: -2%;
+  height: calc(var(--u) * 0.55);
+  background: rgba(230, 246, 255, 0.55);
+  box-shadow: 0 0 calc(var(--u) * 2.4) rgba(210, 238, 255, 0.45);
+}
+.s-clinic .bench {
+  position: absolute;
+  left: 12%;
+  bottom: 26%;
+  width: 22%;
+  height: 8%;
+  background: linear-gradient(180deg, #2c353c, #141a1e);
+  border-top: 1px solid rgba(220, 240, 255, 0.12);
+}
+.s-clinic .bench::after {
+  content: "";
+  position: absolute;
+  left: 8%;
+  top: 100%;
+  width: 6%;
+  height: 120%;
+  background: #10151a;
+}
+.s-clinic .cab {
+  position: absolute;
+  right: 8%;
+  bottom: 24%;
+  width: 14%;
+  height: 30%;
+  background: linear-gradient(180deg, #263038, #101519);
+  border: 1px solid rgba(210, 235, 250, 0.08);
+}
+.s-clinic .cab::after {
+  content: "";
+  position: absolute;
+  inset: 12% 10%;
+  background: repeating-linear-gradient(180deg, rgba(210, 235, 250, 0.12) 0 6%, transparent 6% 14%);
+}
+.s-clinic .ttube {
+  position: absolute;
+  left: 24%;
+  right: 24%;
+  top: 7%;
+  height: calc(var(--u) * 0.55);
+  background: linear-gradient(90deg, transparent, rgba(236, 248, 255, 0.9) 20%, rgba(236, 248, 255, 0.9) 80%, transparent);
+  box-shadow: 0 0 calc(var(--u) * 8) calc(var(--u) * 2.4) rgba(200, 230, 255, 0.20);
+}
+.s-clinic .near {
+  background:
+    linear-gradient(90deg, rgba(4, 6, 8, 0.95) 0%, transparent 8%, transparent 92%, rgba(4, 6, 8, 0.95) 100%),
+    linear-gradient(180deg, rgba(4, 6, 8, 0.9) 0%, transparent 12%, transparent 88%, rgba(4, 6, 8, 0.95) 100%);
+  filter: blur(calc(var(--u) * 0.24));
+}
+
+/* ============================================================
+   派出所 · 值班室
+   ============================================================ */
+.s-police { background: #12100c; filter: saturate(0.4) contrast(1.16); }
+.s-police .far {
+  background:
+    radial-gradient(ellipse 16% 22% at 24% 44%, rgba(255, 214, 150, 0.34), transparent 72%),
+    radial-gradient(ellipse 34% 30% at 50% 40%, rgba(190, 210, 230, 0.06), transparent 76%),
+    linear-gradient(180deg, #1d1c18 0%, #22201b 46%, #0d0c0a 100%);
+}
+.s-police .board {
+  position: absolute;
+  left: 52%;
+  top: 18%;
+  width: 34%;
+  height: 40%;
+  background: linear-gradient(180deg, #23231f, #151512);
+  border: 1px solid rgba(230, 220, 200, 0.10);
+  box-shadow: inset 0 0 calc(var(--u) * 4) rgba(0, 0, 0, 0.7);
+}
+.s-police .board::after {
+  content: "";
+  position: absolute;
+  inset: 10% 8%;
+  background-image:
+    linear-gradient(180deg, rgba(226, 220, 205, 0.22) 0 16%, transparent 16% 24%),
+    linear-gradient(180deg, transparent 0 34%, rgba(226, 220, 205, 0.14) 34% 52%, transparent 52% 60%),
+    linear-gradient(180deg, transparent 0 70%, rgba(226, 220, 205, 0.10) 70% 86%, transparent 86%);
+}
+.s-police .desk {
+  position: absolute;
+  left: 14%;
+  bottom: 26%;
+  width: 34%;
+  height: 16%;
+  background: linear-gradient(180deg, #3a3327, #1a1610);
+  border-top: 1px solid rgba(240, 220, 180, 0.14);
+  box-shadow: 0 calc(var(--u) * -1) calc(var(--u) * 2.6) rgba(0, 0, 0, 0.8);
+}
+.s-police .lamp2 {
+  position: absolute;
+  left: 22%;
+  bottom: 40%;
+  width: calc(var(--u) * 5);
+  height: calc(var(--u) * 5);
+  background: radial-gradient(ellipse at 50% 70%, rgba(255, 216, 150, 0.85), rgba(255, 190, 120, 0.2) 52%, transparent 74%);
+  filter: blur(calc(var(--u) * 0.5));
+}
+.s-police .near {
+  background: linear-gradient(180deg, rgba(4, 3, 2, 0.9) 0%, transparent 10%, transparent 90%, rgba(4, 3, 2, 0.95) 100%);
+  filter: blur(calc(var(--u) * 0.22));
+}
+
+/* ============================================================
+   殡仪馆 · 冷藏间
+   ============================================================ */
+.s-funeral { background: #0c0e0f; filter: saturate(0.22) contrast(1.18) brightness(1.02); }
+.s-funeral .far {
+  background:
+    radial-gradient(ellipse 40% 34% at 50% 22%, rgba(226, 238, 246, 0.14), transparent 76%),
+    linear-gradient(180deg, #171c1f 0%, #1c2226 46%, #080a0b 100%);
+}
+.s-funeral .wall {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  top: 22%;
+  height: 52%;
+  background:
+    repeating-linear-gradient(90deg,
+      rgba(190, 206, 216, 0.10) 0 15.6%,
+      rgba(0, 0, 0, 0.55) 15.6% 16.4%),
+    linear-gradient(180deg, rgba(52, 62, 70, 0.55), rgba(18, 22, 25, 0.75));
+  border: 1px solid rgba(210, 226, 236, 0.10);
+  box-shadow: inset 0 0 calc(var(--u) * 5) rgba(0, 0, 0, 0.8);
+}
+.s-funeral .wall::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 34%;
+  height: 1px;
+  background: rgba(220, 236, 246, 0.12);
+  box-shadow: 0 18px 0 rgba(220, 236, 246, 0.08), 0 36px 0 rgba(220, 236, 246, 0.06);
+}
+.s-funeral .open {
+  position: absolute;
+  left: 41%;
+  top: 30%;
+  width: 15.6%;
+  height: 26%;
+  background: linear-gradient(180deg, #050607, #0a0c0d);
+  box-shadow: inset 0 calc(var(--u) * 1.4) calc(var(--u) * 2.4) rgba(180, 200, 215, 0.10);
+}
+.s-funeral .open::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -14%;
+  height: 14%;
+  background: linear-gradient(180deg, rgba(200, 216, 226, 0.28), transparent);
+  filter: blur(calc(var(--u) * 0.6));
+}
+.s-funeral .near {
+  background:
+    linear-gradient(90deg, rgba(3, 4, 5, 0.96) 0%, transparent 8%, transparent 92%, rgba(3, 4, 5, 0.96) 100%),
+    linear-gradient(180deg, rgba(3, 4, 5, 0.92) 0%, transparent 10%, transparent 90%, rgba(3, 4, 5, 0.96) 100%);
+  filter: blur(calc(var(--u) * 0.24));
+}
+
+/* ============================================================
+   旧宅 · 封条的门
+   ============================================================ */
+.s-oldhouse { background: #0e0b08; filter: saturate(0.5) contrast(1.2) brightness(0.96); }
+.s-oldhouse .far {
+  background:
+    radial-gradient(ellipse 10% 24% at 54% 48%, rgba(255, 214, 150, 0.26), transparent 72%),
+    radial-gradient(ellipse 46% 40% at 50% 34%, rgba(160, 130, 90, 0.08), transparent 76%),
+    linear-gradient(180deg, #221a13 0%, #241b13 46%, #0c0906 100%);
+}
+.s-oldhouse .doorway {
+  position: absolute;
+  left: 38%;
+  top: 18%;
+  width: 24%;
+  height: 60%;
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.30) 0 1.6%, transparent 1.6% 8.4%),
+    linear-gradient(180deg, #241a12 0%, #150f0a 60%, #0c0806 100%);
+  border: 1px solid rgba(200, 170, 120, 0.14);
+  box-shadow: 0 0 calc(var(--u) * 4) rgba(0, 0, 0, 0.85);
+}
+.s-oldhouse .doorway::after {
+  content: "";
+  position: absolute;
+  left: 3%;
+  right: 3%;
+  bottom: -1%;
+  height: calc(var(--u) * 0.5);
+  background: rgba(255, 226, 170, 0.45);
+  box-shadow: 0 0 calc(var(--u) * 2.6) rgba(255, 214, 150, 0.35);
+}
+.s-oldhouse .seal {
+  position: absolute;
+  left: 34%;
+  top: 44%;
+  width: 32%;
+  height: 4.4%;
+  transform: rotate(-3deg);
+  background: linear-gradient(180deg, rgba(196, 182, 158, 0.62), rgba(138, 126, 106, 0.52));
+  box-shadow: 0 calc(var(--u) * 0.4) calc(var(--u) * 1) rgba(0, 0, 0, 0.55);
+}
+.s-oldhouse .seal::after {
+  content: "";
+  position: absolute;
+  inset: 32% 5%;
+  background: repeating-linear-gradient(90deg,
+    rgba(36, 26, 18, 0.40) 0 0.9%,
+    transparent 0.9% 4.2%);
+}
+.s-oldhouse .dust {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 22% 30%, rgba(220, 200, 170, 0.5) 0 1px, transparent 1.4px),
+    radial-gradient(circle at 68% 46%, rgba(220, 200, 170, 0.4) 0 1px, transparent 1.4px),
+    radial-gradient(circle at 44% 68%, rgba(220, 200, 170, 0.35) 0 1px, transparent 1.4px);
+  background-size: 40% 40%, 46% 46%, 52% 52%;
+  opacity: 0.5;
+  animation: drift 26s linear infinite alternate;
+}
+@keyframes drift {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-2%, -3%, 0); }
+}
+.s-oldhouse .near {
+  background:
+    linear-gradient(90deg, rgba(5, 4, 3, 0.95) 0%, transparent 9%, transparent 91%, rgba(5, 4, 3, 0.95) 100%),
+    linear-gradient(180deg, rgba(5, 4, 3, 0.9) 0%, transparent 11%, transparent 89%, rgba(5, 4, 3, 0.96) 100%);
+  filter: blur(calc(var(--u) * 0.26));
+}
+
+/* ============================================================
+   江边 · 雨夜
+   ============================================================ */
+.s-river { background: #080d12; filter: saturate(0.44) contrast(1.16); }
+.s-river .far {
+  background:
+    radial-gradient(ellipse 8% 20% at 18% 34%, rgba(255, 226, 170, 0.42), transparent 72%),
+    radial-gradient(ellipse 8% 20% at 82% 30%, rgba(255, 226, 170, 0.28), transparent 72%),
+    linear-gradient(180deg, #0a1017 0%, #101a23 52%, #060a0e 100%);
+}
+.s-river .water {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 56%;
+  bottom: 0;
+  background:
+    linear-gradient(180deg, rgba(120, 160, 195, 0.10) 0%, rgba(60, 90, 115, 0.06) 40%, transparent 100%),
+    repeating-linear-gradient(180deg, rgba(190, 220, 245, 0.05) 0 1px, transparent 1px 6px);
+  animation: ripple 9s ease-in-out infinite alternate;
+}
+@keyframes ripple {
+  from { transform: translate3d(0, 0, 0) scaleY(1); }
+  to { transform: translate3d(-1%, 0, 0) scaleY(1.02); }
+}
+.s-river .rail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: calc(var(--u) * 0.45);
+  background: linear-gradient(90deg, rgba(10, 12, 14, 0.9), rgba(60, 66, 70, 0.7), rgba(10, 12, 14, 0.9));
+}
+.s-river .rail::after {
+  content: "";
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: 100%;
+  height: calc(var(--u) * 7);
+  background-image: repeating-linear-gradient(90deg, rgba(40, 46, 50, 0.85) 0 0.4%, transparent 0.4% 7.2%);
+}
+.s-river .bridge {
+  position: absolute;
+  left: 56%;
+  top: 40%;
+  width: 40%;
+  height: 10%;
+  background: linear-gradient(180deg, #141b22, #0a0e12);
+  clip-path: polygon(0 100%, 6% 20%, 94% 20%, 100% 100%);
+}
+.s-river .rain {
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(96deg, transparent 0 calc(var(--u) * 2.4), rgba(196, 220, 240, 0.16) calc(var(--u) * 2.4) calc(var(--u) * 2.52));
+  animation: rain 1.25s linear infinite;
+}
+.s-river .near {
+  background:
+    linear-gradient(90deg, rgba(3, 5, 7, 0.92) 0%, transparent 8%, transparent 92%, rgba(3, 5, 7, 0.92) 100%),
+    linear-gradient(180deg, rgba(3, 5, 7, 0.88) 0%, transparent 10%, transparent 90%, rgba(3, 5, 7, 0.96) 100%);
+  filter: blur(calc(var(--u) * 0.22));
+}
+
+/* ============================================================
+   菜市场 · 雨棚
+   ============================================================ */
+.s-market { background: #12100b; filter: saturate(0.52) contrast(1.14); }
+.s-market .far {
+  background:
+    radial-gradient(ellipse 14% 18% at 30% 30%, rgba(255, 216, 150, 0.40), transparent 72%),
+    radial-gradient(ellipse 12% 16% at 68% 34%, rgba(255, 216, 150, 0.26), transparent 72%),
+    linear-gradient(180deg, #1c1a14 0%, #201d16 46%, #0c0a07 100%);
+}
+.s-market .canopy {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 24%;
+  background: repeating-linear-gradient(100deg,
+    rgba(206, 196, 176, 0.05) 0 3.4%,
+    rgba(22, 20, 16, 0.52) 3.4% 6.8%);
+  box-shadow: 0 calc(var(--u) * 1.2) calc(var(--u) * 2.6) rgba(0, 0, 0, 0.7);
+  transform: skewX(-3deg);
+  opacity: 0.9;
+}
+.s-market .stalls {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: 32%;
+  height: 34%;
+  background:
+    repeating-linear-gradient(90deg,
+      transparent 0 11%,
+      rgba(0, 0, 0, 0.45) 11% 13.5%),
+    linear-gradient(180deg, rgba(66, 55, 40, 0.55) 0%, rgba(26, 22, 17, 0.78) 100%);
+  border-top: 1px solid rgba(255, 216, 150, 0.10);
+}
+.s-market .puddle {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 70%;
+  bottom: 0;
+  background:
+    linear-gradient(180deg, rgba(160, 190, 215, 0.10), transparent 70%),
+    radial-gradient(ellipse 20% 5% at 30% 40%, rgba(200, 225, 245, 0.12), transparent 72%),
+    radial-gradient(ellipse 16% 4% at 68% 60%, rgba(200, 225, 245, 0.10), transparent 72%);
+}
+.s-market .near {
+  background:
+    linear-gradient(90deg, rgba(5, 4, 3, 0.94) 0%, transparent 8%, transparent 92%, rgba(5, 4, 3, 0.94) 100%),
+    linear-gradient(180deg, rgba(5, 4, 3, 0.86) 0%, transparent 10%, transparent 90%, rgba(5, 4, 3, 0.95) 100%);
+  filter: blur(calc(var(--u) * 0.24));
+}
+
+</style>
+<style>
+/* cine.css */
+/* ============================================================
+   cine.css · 电影层
+   给所有场景统一加：画框暗边 / 镜头光晕 / 浮尘
+   这一层不依赖任何素材，靠光本身撑质感。
+   ============================================================ */
+
+/* 画框：四边压暗，模拟镜头边缘衰减 */
+#scenes::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 12;
+  background:
+    radial-gradient(ellipse 120% 130% at 50% 46%, transparent 42%, rgba(0, 0, 0, 0.34) 78%, rgba(0, 0, 0, 0.62) 100%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.34) 0%, transparent 9%, transparent 91%, rgba(0, 0, 0, 0.34) 100%);
+}
+
+/* 镜头光晕：左上角一点冷光，右下角一点暖反光 */
+#scenes::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 11;
+  mix-blend-mode: screen;
+  opacity: 0.5;
+  background:
+    radial-gradient(ellipse 26% 34% at 12% 8%, rgba(150, 180, 210, 0.16), transparent 72%),
+    radial-gradient(ellipse 20% 26% at 88% 92%, rgba(210, 170, 120, 0.10), transparent 74%);
+  animation: flare 18s ease-in-out infinite alternate;
+}
+@keyframes flare {
+  from { opacity: 0.34; transform: translate3d(-0.6%, 0, 0); }
+  to { opacity: 0.54; transform: translate3d(0.6%, -0.4%, 0); }
+}
+
+/* 浮尘：细小颗粒缓慢上浮 */
+.dust-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+  opacity: 0.5;
+  background-image:
+    radial-gradient(circle at 18% 62%, rgba(230, 220, 200, 0.55) 0 0.6px, transparent 1.2px),
+    radial-gradient(circle at 42% 34%, rgba(230, 220, 200, 0.40) 0 0.6px, transparent 1.2px),
+    radial-gradient(circle at 67% 72%, rgba(230, 220, 200, 0.45) 0 0.6px, transparent 1.2px),
+    radial-gradient(circle at 84% 28%, rgba(230, 220, 200, 0.35) 0 0.6px, transparent 1.2px);
+  background-size: 37% 41%, 43% 47%, 51% 53%, 59% 61%;
+  animation: dust 34s linear infinite;
+}
+@keyframes dust {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-2.5%, -5%, 0); }
+}
+
+</style>
+<style>
+/* anim.css */
+/* ============================================================
+   anim.css · 呼吸层
+   让静止的场景动起来：灯会呼吸、日光灯会闪、雨在流、
+   门缝的光会抖、水会荡、封条会飘。
+   全部只用 transform / opacity / filter，不碰布局。
+   ============================================================ */
+
+/* ---------- 通用：慢呼吸（灯光） ---------- */
+@keyframes glow {
+  0%   { opacity: 0.72; transform: scale(1); }
+  45%  { opacity: 1;    transform: scale(1.035); }
+  100% { opacity: 0.78; transform: scale(1.005); }
+}
+
+/* ---------- 出租屋：台灯呼吸 + 雨在流 ---------- */
+.s-room .lamp::before {
+  animation: glow 6.5s ease-in-out infinite;
+  transform-origin: 50% 20%;
+}
+.s-room .win .far::after {
+  animation: rainFlow 1.15s linear infinite;
+}
+@keyframes rainFlow {
+  from { transform: translate3d(0, -12%, 0); }
+  to   { transform: translate3d(-5%, 12%, 0); }
+}
+
+/* 窗外偶尔有车灯扫过 */
+.s-room .win .far::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 240, 210, 0.55) 50%, transparent 70%);
+  opacity: 0;
+  animation: carLight 14s ease-in-out infinite;
+}
+@keyframes carLight {
+  0%, 82%, 100% { opacity: 0; transform: translateX(-40%); }
+  86%           { opacity: 0.5; }
+  92%           { opacity: 0; transform: translateX(60%); }
+}
+
+/* ---------- 走廊：门缝的光会抖 ---------- */
+.s-hall .doorlight {
+  animation: flicker 9s steps(1) infinite;
+}
+@keyframes flicker {
+  0%, 88%, 100% { opacity: 1; }
+  89%           { opacity: 0.55; }
+  90%           { opacity: 1; }
+  93%           { opacity: 0.7; }
+  94%           { opacity: 1; }
+}
+
+/* ---------- 诊所：日光灯不规则闪 ---------- */
+.s-clinic .ttube {
+  animation: tubeFlicker 11s steps(1) infinite;
+}
+@keyframes tubeFlicker {
+  0%, 70%, 100% { opacity: 1; }
+  71%           { opacity: 0.35; }
+  72%           { opacity: 1; }
+  74%           { opacity: 0.5; }
+  75%           { opacity: 1; }
+  88%           { opacity: 0.28; }
+  89%           { opacity: 1; }
+}
+.s-clinic .doorway::after {
+  animation: glow 5s ease-in-out infinite;
+}
+
+/* ---------- 殡仪馆：冷雾从抽屉缝里出来 ---------- */
+.s-funeral .open::after {
+  animation: coldMist 7s ease-in-out infinite alternate;
+}
+@keyframes coldMist {
+  from { opacity: 0.18; transform: translateY(0) scaleX(1); }
+  to   { opacity: 0.42; transform: translateY(-12%) scaleX(1.12); }
+}
+.s-funeral .wall {
+  animation: coldPulse 12s ease-in-out infinite alternate;
+}
+@keyframes coldPulse {
+  from { filter: brightness(1); }
+  to   { filter: brightness(1.14); }
+}
+
+/* ---------- 旧宅：封条在风里飘 ---------- */
+.s-oldhouse .seal {
+  animation: sealSway 8s ease-in-out infinite alternate;
+  transform-origin: 50% 50%;
+}
+@keyframes sealSway {
+  from { transform: rotate(-3.6deg) translateY(0); }
+  to   { transform: rotate(-1.4deg) translateY(-1.5%); }
+}
+.s-oldhouse .dust {
+  animation: dustDrift 26s linear infinite alternate;
+}
+@keyframes dustDrift {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-2%, -3.5%, 0); }
+}
+
+/* ---------- 派出所：台灯呼吸 + 案件板微微晃 ---------- */
+.s-police .lamp2 {
+  animation: glow 7.5s ease-in-out infinite;
+}
+.s-police .board::after {
+  animation: boardFlick 16s steps(1) infinite;
+}
+@keyframes boardFlick {
+  0%, 96%, 100% { opacity: 1; }
+  97%           { opacity: 0.4; }
+  98%           { opacity: 1; }
+}
+
+/* ---------- 家：吊灯呼吸 + 碗里有点热气 ---------- */
+.s-home .warmlamp::after {
+  animation: glow 5.5s ease-in-out infinite;
+  transform-origin: 50% 0%;
+}
+.s-home .bowls {
+  animation: steam 9s ease-in-out infinite alternate;
+}
+@keyframes steam {
+  from { opacity: 0.55; }
+  to   { opacity: 0.85; }
+}
+
+/* ---------- 江边：水面在荡，雨在下 ---------- */
+.s-river .water {
+  animation: rippleDrift 11s ease-in-out infinite alternate;
+}
+@keyframes rippleDrift {
+  from { transform: translate3d(0, 0, 0) scaleY(1); opacity: 0.85; }
+  to   { transform: translate3d(-1.2%, 0, 0) scaleY(1.03); opacity: 1; }
+}
+.s-river .rain {
+  animation: rainFlow 1.3s linear infinite;
+}
+.s-river .bridge {
+  animation: glow 10s ease-in-out infinite alternate;
+}
+
+/* ---------- 菜市场：雨棚被砸得发颤 ---------- */
+.s-market .canopy {
+  animation: canopyTremble 3.4s ease-in-out infinite;
+  transform-origin: 50% 0%;
+}
+@keyframes canopyTremble {
+  0%, 100% { transform: skewX(-4deg) scaleY(1); }
+  50%      { transform: skewX(-4deg) scaleY(1.012); }
+}
+.s-market .puddle {
+  animation: rippleDrift 9s ease-in-out infinite alternate;
+}
+
+/* ---------- 便利店：冰柜的冷光在动 ---------- */
+.s-shop .fridge {
+  animation: glow 8s ease-in-out infinite;
+}
+
+/* ---------- 街道：路灯偶尔暗一下 ---------- */
+.s-street .lamp-post::after,
+.s-street .lamp-pool {
+  animation: glow 6s ease-in-out infinite;
+}
+.s-street .lamp-pool {
+  animation: glow 6s ease-in-out infinite, flarePool 13s ease-in-out infinite alternate;
+}
+@keyframes flarePool {
+  from { transform: scale(1); }
+  to   { transform: scale(1.06); }
+}
+
+/* ---------- 通用：镜头有极细微的呼吸，像手持 ---------- */
+.scene.live {
+  animation: handHeld 22s ease-in-out infinite alternate;
+}
+@keyframes handHeld {
+  from { transform: scale(1) translate3d(0, 0, 0); }
+  to   { transform: scale(1.012) translate3d(-0.4%, -0.3%, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene.live,
+  .s-room .lamp::before,
+  .s-room .win .far::after,
+  .s-room .win .far::before,
+  .s-hall .doorlight,
+  .s-clinic .ttube,
+  .s-clinic .doorway::after,
+  .s-funeral .open::after,
+  .s-funeral .wall,
+  .s-oldhouse .seal,
+  .s-oldhouse .dust,
+  .s-police .lamp2,
+  .s-police .board::after,
+  .s-home .warmlamp::after,
+  .s-home .bowls,
+  .s-river .water,
+  .s-river .rain,
+  .s-river .bridge,
+  .s-market .canopy,
+  .s-market .puddle,
+  .s-shop .fridge,
+  .s-street .lamp-post::after,
+  .s-street .lamp-pool,
+  .dust-layer,
+  #scenes::before {
+    animation: none !important;
+  }
+}
+
+</style>
+<style>
+/* intro.css */
+/* ============================================================
+   intro.css · 开场动画
+   两场命案，三十秒。可跳过。
+   ============================================================ */
+
+.intro {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  background: #040405;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 900ms ease;
+  overflow: hidden;
+}
+.intro.on {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.intro__stage {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 1600ms ease;
+}
+.intro__stage.on { opacity: 1; }
+
+.intro__stage .scene {
+  display: block;
+  opacity: 1;
+}
+
+/* 文字 */
+.intro__text {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 78%;
+  text-align: center;
+  font-size: calc(var(--u) * 1.85);
+  line-height: 2.2;
+  letter-spacing: 0.14em;
+  color: #ece6da;
+  text-shadow: 0 0 calc(var(--u) * 3) rgba(0, 0, 0, 1), 0 0 calc(var(--u) * 1) rgba(0, 0, 0, 1);
+  pointer-events: none;
+}
+.intro__text .l {
+  display: block;
+  opacity: 1;
+  animation: introLine 1400ms ease;
+}
+.intro__text .l + .l { margin-top: calc(var(--u) * 0.8); }
+
+@keyframes introLine {
+  from { opacity: 0; filter: blur(calc(var(--u) * 0.5)); transform: translateY(calc(var(--u) * 0.5)); }
+  to   { opacity: 1; filter: none; transform: none; }
+}
+
+.intro__text.big {
+  font-size: calc(var(--u) * 6.4);
+  letter-spacing: 0.5em;
+  text-indent: 0.5em;
+  font-weight: 400;
+}
+
+.intro__text.dim { color: rgba(233, 227, 215, 0.55); }
+
+/* 跳 */
+.intro__skip {
+  position: absolute;
+  right: calc(var(--u) * 3.2);
+  bottom: calc(var(--u) * 3);
+  z-index: 52;
+  font-size: calc(var(--u) * 0.84);
+  letter-spacing: 0.3em;
+  color: rgba(233, 227, 215, 0.34);
+  border: 1px solid rgba(233, 227, 215, 0.14);
+  padding: calc(var(--u) * 0.42) calc(var(--u) * 1.1);
+  cursor: pointer;
+  background: rgba(6, 6, 8, 0.5);
+  font-family: inherit;
+  transition: all 220ms ease;
+}
+.intro__skip:hover {
+  color: var(--warm);
+  border-color: rgba(216, 180, 126, 0.55);
+}
+
+/* 结尾的闪白，切进正片 */
+.intro__flash {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 1;
+  pointer-events: none;
+  z-index: 51;
+  transition: opacity 700ms ease;
+}
+.intro__flash.off { opacity: 0; }
+
+/* 黑场时的一点噪点，别让画面太干净 */
+.intro::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 53;
+  opacity: 0.14;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/></filter><rect width='160' height='160' filter='url(%23n)' opacity='.55'/></svg>");
+  animation: grainShift 420ms steps(2) infinite;
+}
+
+</style>
+<style>
+/* slots.css */
+/* ============================================================
+   slots.css · 热区层（独立一层，永远在最上面，保证点得到）
+   ============================================================ */
+
+#hotspots {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+}
+#hotspots .hs {
+  position: absolute;
+  pointer-events: auto;
+  z-index: 31;
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: border-color 200ms ease, background 200ms ease;
+}
+#hotspots .hs:hover,
+#hotspots .hs:focus-visible {
+  border-color: rgba(216, 180, 126, 0.65);
+  background: rgba(216, 180, 126, 0.07);
+  outline: none;
+}
+#hotspots .hs span {
+  position: absolute;
+  left: 50%;
+  bottom: -1.75em;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-family: inherit;
+  font-size: calc(var(--u) * 0.84);
+  letter-spacing: 0.16em;
+  color: rgba(233, 227, 215, 0.95);
+  background: rgba(8, 8, 10, 0.82);
+  border: 1px solid rgba(216, 180, 126, 0.26);
+  padding: calc(var(--u) * 0.24) calc(var(--u) * 0.6);
+  opacity: 0;
+  transition: opacity 160ms ease;
+  pointer-events: none;
+}
+#hotspots .hs:hover span,
+#hotspots .hs:focus-visible span {
+  opacity: 1;
+}
+
+/* 体力不足时，热区变灰、点不动 */
+#hotspots.tired .hs {
+  cursor: not-allowed;
+  border-color: rgba(160, 60, 60, 0.25);
+}
+#hotspots.tired .hs:hover {
+  border-color: rgba(160, 60, 60, 0.5);
+  background: rgba(90, 30, 30, 0.10);
+}
+
+</style>
+<style>
+/* clues.css */
+/* ============================================================
+   clues.css · 证据册
+   ============================================================ */
+
+.cluebtn {
+  position: absolute;
+  right: calc(var(--u) * 3);
+  bottom: 36.5%;
+  z-index: 32;
+  font-family: inherit;
+  font-size: calc(var(--u) * 0.84);
+  letter-spacing: 0.2em;
+  color: rgba(216, 180, 126, 0.8);
+  background: rgba(8, 8, 10, 0.66);
+  border: 1px solid rgba(216, 180, 126, 0.28);
+  padding: calc(var(--u) * 0.42) calc(var(--u) * 0.9);
+  cursor: pointer;
+  backdrop-filter: blur(3px);
+  transition: all 180ms ease;
+}
+.cluebtn:hover {
+  color: #f0d9a8;
+  border-color: rgba(216, 180, 126, 0.7);
+}
+
+.cluepanel {
+  position: absolute;
+  right: calc(var(--u) * 3);
+  bottom: 41%;
+  width: 44%;
+  max-height: 44%;
+  z-index: 33;
+  background: rgba(6, 6, 8, 0.94);
+  border: 1px solid rgba(216, 180, 126, 0.22);
+  padding: calc(var(--u) * 1.1) calc(var(--u) * 1.2);
+  overflow-y: auto;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease;
+  scrollbar-width: thin;
+}
+.cluepanel.on {
+  opacity: 1;
+  pointer-events: auto;
+}
+.cluepanel__title {
+  font-size: calc(var(--u) * 0.86);
+  letter-spacing: 0.3em;
+  color: rgba(216, 180, 126, 0.7);
+  margin-bottom: calc(var(--u) * 0.9);
+  padding-bottom: calc(var(--u) * 0.7);
+  border-bottom: 1px solid rgba(216, 180, 126, 0.16);
+}
+.cluepanel .row {
+  font-size: calc(var(--u) * 1.02);
+  line-height: 1.9;
+  color: rgba(233, 227, 215, 0.86);
+  margin-bottom: calc(var(--u) * 0.9);
+  padding-left: calc(var(--u) * 1.1);
+  position: relative;
+}
+.cluepanel .row::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.72em;
+  width: calc(var(--u) * 0.4);
+  height: calc(var(--u) * 0.4);
+  background: rgba(216, 180, 126, 0.7);
+}
+.cluepanel .row small {
+  display: block;
+  font-size: calc(var(--u) * 0.78);
+  letter-spacing: 0.12em;
+  color: rgba(233, 227, 215, 0.38);
+  margin-top: calc(var(--u) * 0.2);
+}
+.cluepanel .row.item::before {
+  background: rgba(150, 190, 220, 0.7);
+}
+.cluepanel .empty {
+  font-size: calc(var(--u) * 0.94);
+  color: rgba(233, 227, 215, 0.34);
+  letter-spacing: 0.1em;
+}
+
+</style>
+<style>
+/* gate.css */
+/* ============================================================
+   gate.css · 进入前的门
+   浏览器规定：没有用户点击，不许出声。
+   所以先要一次点击，之后音乐和声线才起得来。
+   ============================================================ */
+
+.gate {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  background: #050506;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: calc(var(--u) * 1.2);
+  transition: opacity 900ms ease;
+}
+.gate.off {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.gate__kicker {
+  font-size: calc(var(--u) * 0.84);
+  letter-spacing: 0.6em;
+  text-indent: 0.6em;
+  color: rgba(216, 180, 126, 0.62);
+}
+
+.gate__title {
+  font-size: calc(var(--u) * 7.2);
+  letter-spacing: 0.4em;
+  text-indent: 0.4em;
+  color: #ece6da;
+  text-shadow: 0 0 calc(var(--u) * 6) rgba(216, 180, 126, 0.16);
+}
+
+.gate__btn {
+  margin-top: calc(var(--u) * 2);
+  font-family: inherit;
+  font-size: calc(var(--u) * 1.15);
+  letter-spacing: 0.42em;
+  text-indent: 0.42em;
+  color: #ece6da;
+  background: rgba(216, 180, 126, 0.05);
+  border: 1px solid rgba(216, 180, 126, 0.38);
+  padding: calc(var(--u) * 0.9) calc(var(--u) * 3.2);
+  cursor: pointer;
+  transition: all 260ms ease;
+}
+.gate__btn:hover {
+  background: rgba(216, 180, 126, 0.14);
+  border-color: rgba(216, 180, 126, 0.9);
+  color: #fff6e2;
+  box-shadow: 0 0 calc(var(--u) * 3) rgba(216, 180, 126, 0.24);
+}
+
+.gate__hint {
+  margin-top: calc(var(--u) * 1.6);
+  font-size: calc(var(--u) * 0.76);
+  letter-spacing: 0.24em;
+  color: rgba(233, 227, 215, 0.34);
+}
+
+.gate__ver {
+  margin-top: calc(var(--u) * 0.6);
+  font-size: calc(var(--u) * 0.66);
+  letter-spacing: 0.18em;
+  color: rgba(216, 180, 126, 0.4);
+}
+
+/* 顶部「线索 n/12」现在是个按钮，点开证据册 */
+#topClue {
+  font-family: inherit;
+  font-size: calc(var(--u) * 0.86);
+  letter-spacing: 0.2em;
+  color: rgba(216, 180, 126, 0.86);
+  background: rgba(8, 8, 10, 0.55);
+  border: 1px solid rgba(216, 180, 126, 0.32);
+  padding: calc(var(--u) * 0.34) calc(var(--u) * 0.8);
+  cursor: pointer;
+  pointer-events: auto;
+  text-align: right;
+  transition: all 180ms ease;
+}
+#topClue:hover {
+  color: #ffe9bd;
+  border-color: rgba(216, 180, 126, 0.85);
+  background: rgba(40, 32, 22, 0.8);
+}
+
+</style>
+<style>
+/* photo.css */
+/* ============================================================
+   photo.css · 照片层（插槽）
+   把照片放进 art/ 目录，按下面的名字命名，游戏自动使用；
+   没有照片就用原来的纯 CSS 场景，不报错。
+   ------------------------------------------------------------
+   art/room.jpg   art/hall.jpg   art/street.jpg  art/shop.jpg
+   art/home.jpg   art/clinic.jpg art/police.jpg  art/funeral.jpg
+   art/oldhouse.jpg art/oldinside.jpg art/river.jpg art/market.jpg
+   建议 1600×680 以上、横向、暗调。
+   ============================================================ */
+
+.scene[class*="photo-"] {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* 照片当底，原 CSS 场景变成"光效层"压在上面 */
+.scene[class*="photo-"] .far,
+.scene[class*="photo-"] .mid,
+.scene[class*="photo-"] .near {
+  opacity: 0.35;
+  mix-blend-mode: screen;
+}
+.scene[class*="photo-"] .lyr.near {
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+}
+
+/* 照片统一调色：压饱和 + 提对比 + 暗角 */
+.scene[class*="photo-"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 100% 110% at 50% 50%, transparent 58%, rgba(0, 0, 0, 0.46) 100%),
+    linear-gradient(180deg, rgba(4, 4, 6, 0.42) 0%, transparent 20%, transparent 78%, rgba(4, 4, 6, 0.55) 100%);
+  pointer-events: none;
+  z-index: 3;
+}
+.scene[class*="photo-"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(46, 54, 68, 0.14);
+  mix-blend-mode: color;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.scene.photo-room    { background-image: url("art/room.jpg"); }
+.scene.photo-hall    { background-image: url("art/hall.jpg"); }
+.scene.photo-street  { background-image: url("art/street.jpg"); }
+.scene.photo-shop    { background-image: url("art/shop.jpg"); }
+.scene.photo-home    { background-image: url("art/home.jpg"); }
+.scene.photo-clinic  { background-image: url("art/clinic.jpg"); }
+.scene.photo-police  { background-image: url("art/police.jpg"); }
+.scene.photo-funeral { background-image: url("art/funeral.jpg"); }
+.scene.photo-oldhouse  { background-image: url("art/oldhouse.jpg"); }
+.scene.photo-oldinside { background-image: url("art/oldinside.jpg"); }
+.scene.photo-river   { background-image: url("art/river.jpg"); }
+.scene.photo-market  { background-image: url("art/market.jpg"); }
+
+</style>
+<style>
+/* mobile.css */
+/* ============================================================
+   mobile.css · 手机上
+   一、竖屏时提示横过来
+   二、没有鼠标的地方，让「能点的地方」一直隐约显形
+   ============================================================ */
+
+.rotate-tip {
+  position: absolute;
+  inset: 0;
+  z-index: 70;
+  background: #050506;
+  display: none;
+  place-content: center;
+  justify-items: center;
+  text-align: center;
+  padding: 0 12%;
+}
+.rotate-tip__inner { display: grid; justify-items: center; gap: 18px; }
+.rotate-tip__icon {
+  font-size: 46px;
+  color: rgba(216, 180, 126, 0.7);
+  animation: rotateHint 2.6s ease-in-out infinite;
+}
+@keyframes rotateHint {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(90deg); }
+}
+.rotate-tip__text {
+  font-size: 18px;
+  letter-spacing: 0.3em;
+  color: #ece6da;
+}
+.rotate-tip__sub {
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  color: rgba(233, 227, 215, 0.4);
+}
+
+/* 竖屏 + 窄屏：挡住，提示横过来 */
+@media (orientation: portrait) and (max-width: 900px) {
+  .rotate-tip { display: grid; }
+}
+
+/* 触摸设备 / 小屏：没有 hover，所以让热区和标签一直淡淡显形 */
+@media (hover: none), (max-width: 900px) {
+  #hotspots .hs {
+    border-color: rgba(233, 227, 215, 0.10);
+    background: rgba(233, 227, 215, 0.02);
+  }
+  #hotspots .hs span {
+    opacity: 0.62;
+    bottom: -1.9em;
+    font-size: calc(var(--u) * 1.5);
+    padding: calc(var(--u) * 0.4) calc(var(--u) * 0.9);
+  }
+  #hotspots .hs:active {
+    border-color: rgba(216, 180, 126, 0.8);
+    background: rgba(216, 180, 126, 0.12);
+  }
+  .cluepanel {
+    width: 78%;
+    max-height: 60%;
+  }
+  .inputbar input {
+    font-size: calc(var(--u) * 2);
+  }
+}
+
+/* 很矮的横屏（手机上）把面板压扁一点，别把画面吃掉 */
+@media (orientation: landscape) and (max-height: 460px) {
+  .panel { height: 30%; }
+  .panel .ln { font-size: calc(var(--u) * 1.55); }
+  .exits { top: calc(var(--u) * 5.2); }
+  #topClue { font-size: calc(var(--u) * 1.1); }
+}
+
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <div class="frame" id="frame">
+
+    <div class="gate" id="gate">
+      <div class="gate__kicker">推理 · 恐游</div>
+      <div class="gate__title">妄</div>
+      <button class="gate__btn" id="gateBtn" type="button">点 击 进 入</button>
+      <div class="gate__hint">戴上耳机 · 横屏 · 屏幕调暗</div>
+      <div class="gate__ver">v21 · 点击后才有声音</div>
+    </div>
+
+    <div class="rotate-tip">
+      <div class="rotate-tip__inner">
+        <div class="rotate-tip__icon">⟳</div>
+        <div class="rotate-tip__text">请把手机横过来</div>
+        <div class="rotate-tip__sub">这是宽银幕的游戏，竖着看不完整</div>
+      </div>
+    </div>
+
+    <div id="scenes"></div>
+    <div id="hotspots"></div>
+
+    <div class="overlay-vignette"></div>
+    <div class="overlay-grain"></div>
+
+    <div class="topbar">
+      <div id="topDay">第 1 天 · 清晨</div>
+      <div class="topbar__mid" id="topPlace">出租屋</div>
+      <button id="topClue" type="button">线索 0/12</button>
+    </div>
+
+    <div class="exits" id="exits"></div>
+    <div class="cluepanel" id="cluePanel">
+      <div class="cluepanel__title">你手里的东西</div>
+      <div id="clueList"></div>
+    </div>
+
+    <div class="panel" id="panel">
+      <div class="panel__inner" id="panelText"></div>
+    </div>
+
+    <div class="inputbar" id="inputbar">
+      <input id="free" type="text" autocomplete="off" spellcheck="false"
+             maxlength="60" placeholder="说点什么，或者碰一下什么东西">
+      <span class="key">回车</span>
+    </div>
+
+    <div class="flash" id="flash"></div>
+
+    <div class="intro" id="intro">
+      <div class="intro__stage" id="introStage"></div>
+      <div class="intro__text" id="introText"></div>
+      <button class="intro__skip" id="introSkip" type="button">跳过</button>
+    </div>
+
+    <div class="start" id="start">
+      <div class="start__kicker">推理 · 恐游</div>
+      <div class="start__title">妄</div>
+      <div class="start__name" id="lifeName"></div>
+      <div class="start__line" id="lifeLine"></div>
+      <div class="start__wound" id="wound"></div>
+      <div class="start__stat" id="stat"></div>
+      <button class="start__btn" id="begin" type="button">开始第一天</button>
+      <div class="start__seed">种子 <span id="seedtxt"></span></div>
+      <div class="start__hint" id="startHint">横屏 · 戴耳机 · 屏幕调暗</div>
+    </div>
+
+    <div class="end-card" id="end">
+      <div class="end__title" id="endTitle">第一天结束</div>
+      <div class="end__sub" id="endSub"></div>
+      <div class="epitaph" id="epitaph"></div>
+      <div class="trace" id="trace"></div>
+      <button class="again" id="again" type="button">再来一次</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* seed.js */
+/* ============================================================
+   seed.js · 世界的铸造机（UMD：Node 与浏览器共用同一份实现）
+   输入种子 → 这一世的完整设定；同一个种子永远产生同一个世界
+   ============================================================ */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) module.exports = factory();
+  else root.WorldSeed = factory();
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+
+  function fnv(str) {
+    let h = 2166136261;
+    for (let i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  }
+
+  function mulberry32(a) {
+    return function () {
+      a |= 0;
+      a = (a + 0x6d2b79f5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  /** 每个字段一条独立随机流 */
+  function stream(seed, salt) {
+    const r = mulberry32(fnv(seed + '#' + salt));
+    const pick = (arr) => arr[Math.floor(r() * arr.length)];
+    const draw = (arr, n) => {
+      const c = arr.slice();
+      const out = [];
+      for (let i = 0; i < n && c.length; i++) {
+        out.push(c.splice(Math.floor(r() * c.length), 1)[0]);
+      }
+      return out;
+    };
+    const int = (min, max) => min + Math.floor(r() * (max - min + 1));
+    return { pick, draw, int };
+  }
+
+  /* ---------------- 素材池 ---------------- */
+  const SURNAME = ['陈', '林', '周', '沈', '顾', '江', '许', '郑', '宋', '韩', '叶', '温', '白', '邵'];
+  const GIVEN = ['默', '屿', '川', '帆', '舟', '野', '迟', '远', '白', '青', '望', '砚', '沉', '渡'];
+
+  const ORIGIN = [
+    { v: '外地来的', ef: '这条街上没有一个你认识的人' },
+    { v: '本地长起来的', ef: '所有人都知道你小时候是什么样' },
+    { v: '刚回来不久的', ef: '有人记得你走的时候说过不再回来' },
+    { v: '被安排过来的', ef: '你来这里不是因为想' },
+    { v: '躲过来的', ef: '有人还在原来的城市找你' }
+  ];
+
+  const FAMILY = [
+    { v: '母亲一个人把你带大', hook: '她从不提父亲，你也不敢问' },
+    { v: '父亲走了十年没消息', hook: '每年冬天都有一个没接的电话' },
+    { v: '家里还有个上学的妹妹', hook: '她的学费是你欠下的第一笔债' },
+    { v: '父母都在，但都不说话', hook: '你们家吃饭时只有电视的声音' },
+    { v: '你从小在亲戚家轮着住', hook: '你没有一间房是自己的' },
+    { v: '家里只剩你和你哥', hook: '他把房子留给了你，然后走了' },
+    { v: '父母离了，各自成了家', hook: '两边都觉得你该去另一边' }
+  ];
+
+  const JOB = [
+    { v: '夜班保安', place: '岗亭', money: 80, stamina: -18 },
+    { v: '便利店店员', place: '便利店', money: 60, stamina: -12 },
+    { v: '待业', place: '出租屋', money: 0, stamina: 6 },
+    { v: '修车学徒', place: '修理厂', money: 70, stamina: -22 },
+    { v: '送外卖', place: '街上', money: 90, stamina: -26 },
+    { v: '网吧看店', place: '网吧', money: 55, stamina: -14 },
+    { v: '工地小工', place: '工地', money: 95, stamina: -30 }
+  ];
+
+  const FLAW = [
+    { v: '习惯性回避冲突', cost: '每次沉默都会让关系掉 1' },
+    { v: '太要面子', cost: '开口求助要多付一次代价' },
+    { v: '总说明天再说', cost: '事件会过期，过期不补' },
+    { v: '不会拒绝人', cost: '别人塞给你的活会偷走体力' },
+    { v: '说话太直', cost: '真话会让最亲近的人关上门' },
+    { v: '什么都自己扛', cost: '体力见底时没有人会来帮你' },
+    { v: '总想证明自己', cost: '每一次逞强都要用钱补' }
+  ];
+
+  const WOUND = [
+    '三年前没赶回去见父亲最后一面',
+    '十八岁那年把妹妹一个人留在了车站',
+    '答应过一个人会回来，然后没回来',
+    '有一笔钱至今没还，对方也没催',
+    '在母亲住院那次，你在打牌',
+    '曾经举报过一个同事，他后来消失了',
+    '你最亲近的人死在一场你本可以阻止的事故里',
+    '那年冬天你锁了门，没让他进来',
+    '你在电话里说了重话，第二天号码就成了空号',
+    '签字的时候你没看内容',
+    '你撒过一个谎，所有人都还信着',
+    '你救过一个人，但你希望当时没救'
+  ];
+
+  const SEASON = [
+    { v: '冬', w: '连着下了七天雨' },
+    { v: '夏', w: '热得整栋楼都不关窗' },
+    { v: '秋', w: '风把公告栏上的纸吹了一地' },
+    { v: '冬', w: '雪化了一半，路面全是黑的' },
+    { v: '春', w: '楼道里有股潮味，一直没散' }
+  ];
+
+  const STREET = [
+    { role: '工头', at: '岗亭', trust: 20 },
+    { role: '旧友', at: '街口', trust: 55 },
+    { role: '房东', at: '三楼', trust: 30 },
+    { role: '同事', at: '便利店', trust: 25 },
+    { role: '邻居阿姨', at: '隔壁', trust: 35 },
+    { role: '常来的客人', at: '店里', trust: 15 }
+  ];
+
+  const MOTHER_OBSESSION = [
+    '把儿子留在身边，不承认自己在生病',
+    '想让他成家，哪怕随便找一个人',
+    '守住这个家不散，哪怕只剩一间屋',
+    '把丈夫留下的债还清，不告诉任何人',
+    '让儿子欠她，这样他就不会走',
+    '装作什么都好，直到装不下去',
+    '把每一天过成同一天，这样就没人会变',
+    '攒够钱，然后一个人回老家',
+    '不让他知道自己还剩多少时间'
+  ];
+  const MOTHER_TABOO = [
+    '不提「医院」两个字',
+    '不提那年的冬天',
+    '不问钱从哪来',
+    '不谈父亲的葬礼',
+    '不说「你还小」这四个字',
+    '不进那间一直锁着的屋'
+  ];
+  const MOTHER_SECRET = [
+    '她已经在偷偷卖家里的东西',
+    '她把自己的药停了一半',
+    '她给你存了一笔钱，来源没说',
+    '她见过那个人，但没告诉你',
+    '她每天都在你出门后站很久',
+    '她把你的旧东西全留着，一件没扔'
+  ];
+
+  const OBSESSION = [
+    '想让人记住自己年轻时的样子',
+    '守着一笔没人知道的债',
+    '等一个不会回来的人',
+    '证明自己比弟弟强',
+    '把所有事都做完，然后一个人走',
+    '不想再欠任何人一次',
+    '盯着一个人，等他犯错',
+    '想在走之前把话说清楚',
+    '把这件事做完就收手'
+  ];
+  const TABOO = [
+    '不提「医院」两个字',
+    '不提那年的冬天',
+    '不问钱从哪来',
+    '不说「对不起」',
+    '不谈父亲的葬礼',
+    '不在夜里开灯'
+  ];
+  const SECRET = [
+    '他替你顶过一次班，没告诉你',
+    '那笔债其实早就还清了',
+    '他一直在替你看着一个人',
+    '他知道是谁干的，但不会说',
+    '他把你的名字从名单上划掉了',
+    '他要走了，还没跟任何人讲'
+  ];
+
+  const THREADS = [
+    { k: '母亲周三复查', act: 1, payoff: '如果你没去，第 32 天她会自己坐车去' },
+    { k: '房东涨租', act: 1, payoff: '交不上就少一个可以回去的地方' },
+    { k: '旧友托你带一句话', act: 1, payoff: '带到与没带到，是两条人生' },
+    { k: '夜班岗亭有人敲门', act: 2, payoff: '开与不开，决定你后面还敢不敢值夜班' },
+    { k: '妹妹的学费', act: 2, payoff: '凑齐的代价是欠下另一个人' },
+    { k: '修理厂丢了一个件', act: 2, payoff: '谁背这个锅' },
+    { k: '一封没署名的信', act: 2, payoff: '信里提到你早就忘掉的一天' },
+    { k: '街口有人认错你', act: 1, payoff: '被认错的那件事，其实真的发生过' },
+    { k: '母亲把一件旧衣服翻出来', act: 3, payoff: '那件衣服不是你的尺码' },
+    { k: '同事突然不来了', act: 2, payoff: '他的班变成了你的班' },
+    { k: '楼下有人搬走', act: 3, payoff: '留下的东西里有你认识的' },
+    { k: '一张过期的车票', act: 3, payoff: '终点是你曾经说要去的城市' },
+    { k: '邻居家的孩子总在楼道里等', act: 1, payoff: '他在等的人和你有关' },
+    { k: '店里少了一笔钱', act: 2, payoff: '监控那天正好坏了' },
+    { k: '有人在你门口放了一袋菜', act: 2, payoff: '你不知道是谁，但你知道为什么' },
+    { k: '母亲让你陪她去一趟银行', act: 3, payoff: '柜台上那张单子写着别人的名字' }
+  ];
+
+  const OPEN_TIME = ['凌晨 2:14', '早上 6:40', '傍晚 7:05', '深夜 11:48', '下午 4:20', '天亮前 5:30'];
+  const OPEN_PLACE = ['岗亭里', '楼道里', '厨房里', '街口的公交站', '出租屋的床上', '店里的仓库'];
+  const OPEN_ODD = [
+    '听见有人在哭',
+    '发现门没锁',
+    '看见一个人站着不动',
+    '闻到煤气味',
+    '桌上多了一碗还热的饭',
+    '手机里有七个未接来电',
+    '楼道的灯全亮着',
+    '有人叫了你的名字，但没人',
+    '水龙头自己在滴水',
+    '电视开着，没有声音',
+    '鞋底沾了不属于这条街的泥',
+    '镜子上有一个手印，比你的高'
+  ];
+
+  /* ---------------- 生成 ---------------- */
+  function gen(seed) {
+    const sName = stream(seed, 'name');
+    const sOrigin = stream(seed, 'origin');
+    const sFamily = stream(seed, 'family');
+    const sJob = stream(seed, 'job');
+    const sFlaw = stream(seed, 'flaw');
+    const sWound = stream(seed, 'wound');
+    const sSeason = stream(seed, 'season');
+    const sCast = stream(seed, 'cast');
+    const sMother = stream(seed, 'mother');
+    const sThread = stream(seed, 'thread');
+    const sOpen = stream(seed, 'open');
+    const sNote = stream(seed, 'note');
+
+    const origin = sOrigin.pick(ORIGIN);
+    const family = sFamily.pick(FAMILY);
+    const job = sJob.pick(JOB);
+    const flaw = sFlaw.pick(FLAW);
+    const wound = sWound.pick(WOUND);
+    const season = sSeason.pick(SEASON);
+
+    const name = sName.pick(SURNAME) + sName.pick(GIVEN);
+
+    const mother = {
+      role: '母亲',
+      at: '家里',
+      name: sMother.pick(SURNAME) + '秀兰',
+      trust: sMother.int(35, 60),
+      obsession: sMother.pick(MOTHER_OBSESSION),
+      taboo: sMother.pick(MOTHER_TABOO),
+      secret: sMother.pick(MOTHER_SECRET)
+    };
+
+    const others = sCast.draw(STREET, 2).map((k) => ({
+      role: k.role,
+      at: k.at,
+      name: sCast.pick(SURNAME) + sCast.pick(GIVEN),
+      trust: Math.max(5, Math.min(90, k.trust + sCast.int(-10, 10))),
+      obsession: sCast.pick(OBSESSION),
+      taboo: sCast.pick(TABOO),
+      secret: sCast.pick(SECRET)
+    }));
+
+    const cast = [mother, ...others].sort((a, b) => b.trust - a.trust);
+
+    const raw = sThread.draw(THREADS, 3);
+    const picked = raw.map((t, i) => {
+      const owner =
+        t.k.indexOf('母亲') >= 0 || t.k.indexOf('妹妹') >= 0
+          ? '母亲'
+          : sThread.pick(cast).role;
+      return { ...t, act: i + 1, owner };
+    });
+
+    return {
+      seed,
+      who: {
+        name,
+        origin: origin.v,
+        origin_effect: origin.ef,
+        family: family.v,
+        family_hook: family.hook,
+        job: job.v,
+        base_money: job.money,
+        base_stamina: job.stamina,
+        flaw: flaw.v,
+        flaw_cost: flaw.cost,
+        wound
+      },
+      world: { city: '临江', season: season.v, weather: season.w },
+      cast,
+      mother,
+      threads: picked,
+      note: sNote.pick([
+        '饭在锅里，妈出门了。',
+        '锅里有粥，凉了自己热。钥匙别又忘带。',
+        '妈去趟医院，中午回。别等我。',
+        '这周别再熬夜了。锅里有汤。',
+        '妈去趟三院，下午就回。'
+      ]),
+      opening:
+        '第 1 天，' +
+        sOpen.pick(OPEN_TIME) +
+        '，你在' +
+        sOpen.pick(OPEN_PLACE) +
+        '，' +
+        sOpen.pick(OPEN_ODD) +
+        '。'
+    };
+  }
+
+  return { gen, fnv, mulberry32, stream };
+});
+
+</script>
+<script>
+/* world.js */
+/* ============================================================
+   world.js · 临江三号院 · 第 0 天（可玩完整版）
+   场景 / 热区 / 动作 全部在这里。改内容不用碰引擎。
+   ------------------------------------------------------------
+   hotspot.run(S) 返回：
+     { text, cost, go, effects(S), need(S), once }
+   cost 单位：分钟（推进游戏时间）
+   ============================================================ */
+(function (root) {
+  'use strict';
+
+  function hm(m) {
+    const h = Math.floor(m / 60) % 24;
+    const mm = m % 60;
+    return (h < 10 ? '0' : '') + h + ':' + (mm < 10 ? '0' : '') + mm;
+  }
+
+  const SCENES = {
+    /* ================= 出租屋 ================= */
+    room: {
+      title: '出租屋 · 三号楼 402',
+      cls: 's-room',
+      layer: () =>
+        '<div class="lyr mid">' +
+        '<div class="win"><div class="lyr far"></div></div>' +
+        '<div class="desk"></div><div class="lamp"></div>' +
+        '<div class="doorpanel"></div>' +
+        '</div>' +
+        '<div class="lyr near"></div><div class="light-leak"></div>',
+      ambient: ['rain', 'hum'],
+      hotspots: [
+        {
+          id: 'window',
+          label: '窗',
+          rect: [27, 17, 27, 42],
+          run: (S) => ({
+            text:
+              S.seen.window
+                ? '雨还在下。楼下的水洼里映着对面楼的灯。'
+                : '外面下着雨，' +
+                  S.life.world.weather +
+                  '。对面楼上有一扇窗亮着，一直没熄。',
+            cost: 4
+          })
+        },
+        {
+          id: 'note',
+          label: '桌上的字条',
+          rect: [24, 76, 18, 14],
+          run: (S) => {
+            S.flags.readNote = true;
+            if (/医院|三院/.test(S.life.note)) S.flags.knowHospital = true;
+            return {
+              text: '「' + S.life.note + '」\n\n字是她的，最后一个字拖得很长。',
+              cost: 5
+            };
+          }
+        },
+        {
+          id: 'phone',
+          label: '手机',
+          rect: [44, 78, 9, 9],
+          run: (S) => {
+            if (S.seen.phone) return { text: '三个未接来电。还是那三个。', cost: 2 };
+            S.seen.phone = true;
+            return {
+              text:
+                '三个未接来电，都是凌晨打的。\n' +
+                '最后一个在 4:51。你那时候醒着。',
+              cost: 6
+            };
+          }
+        },
+        {
+          id: 'lamp',
+          label: '台灯',
+          rect: [13, 70, 8, 12],
+          run: (S) => {
+            S.flags.lampOn = !S.flags.lampOn;
+            return {
+              text: S.flags.lampOn
+                ? '灯亮了。屋子一下变得比刚才更小。'
+                : '你关掉灯。窗外的光是唯一的光。',
+              cost: 2
+            };
+          }
+        },
+        {
+          id: 'bag',
+          label: '背包',
+          rect: [8, 84, 12, 12],
+          run: (S) => {
+            if (S.seen.bag) return { text: '钱包，工牌，一包没拆的烟。', cost: 2 };
+            S.seen.bag = true;
+            return {
+              text:
+                '钱包里有 ' +
+                S.money +
+                ' 块。\n工牌上写着「' +
+                S.life.who.job +
+                '」。\n还有一包没拆的烟——你不抽，但一直带着。',
+              cost: 4
+            };
+          }
+        },
+        {
+          id: 'bed',
+          label: '床',
+          rect: [4, 62, 16, 26],
+          run: (S) => ({
+            text:
+              S.stamina > 60
+                ? '你躺回去，闭上眼。睡不着，但也不想动。'
+                : '你躺回去。身体沉得像灌了水。',
+            cost: 25,
+            effects: (s) => {
+              s.stamina = Math.min(100, s.stamina + 12);
+            }
+          })
+        },
+        {
+          id: 'door',
+          label: '门',
+          rect: [74, 20, 18, 72],
+          run: () => ({ text: '你拉开门。楼道里的灯是声控的，但它没亮。', cost: 2, go: 'hall' })
+        }
+      ]
+    },
+
+    /* ================= 走廊 ================= */
+    hall: {
+      title: '三号楼 · 四层走廊',
+      cls: 's-hall',
+      layer: () =>
+        '<div class="lyr far"></div>' +
+        '<div class="doorframe"></div><div class="doorlight"></div>' +
+        '<div class="lyr mid"></div>' +
+        '<div class="shadow" id="shadow"></div>' +
+        '<div class="neighbor-door"></div>' +
+        '<div class="lyr near"></div><div class="light-leak"></div>',
+      ambient: ['rain', 'hall'],
+      hotspots: [
+        {
+          id: 'aunt',
+          label: '隔壁的门',
+          rect: [4, 26, 14, 56],
+          run: (S) => {
+            if (!S.flags.metAunt) {
+              S.flags.metAunt = true;
+              S.rel.aunt += 6;
+              S.flags.knowCough = true;
+              return {
+                text:
+                  '隔壁的门开了一条缝。\n' +
+                  '「这么早？」' +
+                  S.life.cast[1].role +
+                  '眯着眼睛，「你妈昨天在楼梯口坐了半个钟头，我喊她她才站起来。」\n' +
+                  '她顿了顿：「她最近老咳。你听见没有？」',
+                cost: 12
+              };
+            }
+            if (!S.flags.askedAunt) {
+              S.flags.askedAunt = true;
+              return {
+                text:
+                  '「你妈那病啊……」她把声音压低，「不是一天两天了。你别等她说。」\n' +
+                  '说完就把门关上了。',
+                cost: 10,
+                effects: (s) => {
+                  s.rel.aunt += 4;
+                  s.flags.knowSick = true;
+                }
+              };
+            }
+            return { text: '门关着。里面在放广播。', cost: 3 };
+          }
+        },
+        {
+          id: 'third',
+          label: '三楼的门',
+          rect: [82, 26, 14, 58],
+          run: (S) => {
+            if (S.seen.third) return { text: '门里没有声音。你敲过一次，没人应。', cost: 4 };
+            S.seen.third = true;
+            return {
+              text: '你敲了三下。\n门里有人走路的声音，走到门边，停住了。\n然后没开。',
+              cost: 8
+            };
+          }
+        },
+        {
+          id: 'stairwin',
+          label: '楼梯口的窗',
+          rect: [44, 8, 12, 22],
+          run: () => ({
+            text: '雨把窗子糊住了。楼下有人在收伞，收了很久。',
+            cost: 4
+          })
+        },
+        {
+          id: 'down',
+          label: '下楼',
+          rect: [36, 78, 28, 16],
+          run: () => ({ text: '楼梯很陡。你扶着墙下去。', cost: 6, go: 'street' })
+        },
+        {
+          id: 'back',
+          label: '回屋',
+          rect: [46, 24, 9, 50],
+          run: () => ({ text: '你退回屋里。', cost: 2, go: 'room' })
+        }
+      ]
+    },
+
+    /* ================= 街道 ================= */
+    street: {
+      title: '临江 · 三号院门口',
+      cls: 's-street',
+      layer: () =>
+        '<div class="lyr far"></div>' +
+        '<div class="lamp-post"></div><div class="lamp-pool"></div>' +
+        '<div class="board"></div>' +
+        '<div class="figure" id="figure"></div>' +
+        '<div class="lyr near"></div>',
+      ambient: ['rain', 'street'],
+      hotspots: [
+        {
+          id: 'board',
+          label: '公告栏',
+          rect: [10, 30, 16, 34],
+          run: (S) => {
+            if (S.seen.board) return { text: '那些纸都被雨泡软了，字化开了。', cost: 4 };
+            S.seen.board = true;
+            return {
+              text:
+                '公告栏上贴着一张招工：「夜班，包一顿饭，日结。」\n' +
+                '下面一行小字：不押证。\n' +
+                '纸上有人用圆珠笔写了两个字：别去。',
+              cost: 8,
+              effects: (s) => {
+                s.flags.sawJob = true;
+              }
+            };
+          }
+        },
+        {
+          id: 'figure',
+          label: '站着不动的人',
+          rect: [66, 44, 10, 36],
+          run: (S) => {
+            if (S.flags.figureTimes >= 2) {
+              return { text: '他已经不在了。地上有一圈干的地方。', cost: 4 };
+            }
+            S.flags.figureTimes = (S.flags.figureTimes || 0) + 1;
+            if (S.flags.figureTimes === 1) {
+              return {
+                text:
+                  '一个男人站在路灯下面，没打伞。\n' +
+                  '你走过去，他没有转头。\n' +
+                  '你说「下雨了」。他说：「我知道。」',
+                cost: 10,
+                effects: (s) => {
+                  s.flags.metFigure = true;
+                }
+              };
+            }
+            return {
+              text:
+                '他还站在那儿。\n' +
+                '「你在等人？」你问。\n' +
+                '他过了很久才说：「等一个说会回来的人。」',
+              cost: 10,
+              effects: (s) => {
+                s.flags.figureLine = true;
+              }
+            };
+          }
+        },
+        {
+          id: 'busstop',
+          label: '公交站',
+          rect: [84, 40, 14, 40],
+          run: (S) => ({
+            text:
+              (S.flags.knowHospital
+                ? '站牌上有「三院」两个字。末班车 21:40。\n'
+                : '站牌上的字被雨冲得看不清。\n') +
+              '你站了一会儿，一辆车也没来。',
+            cost: 30,
+            effects: (s) => {
+              s.flags.sawBus = true;
+              s.stamina = Math.max(0, s.stamina - 4);
+            }
+          })
+        },
+        {
+          id: 'goshop',
+          label: '便利店',
+          rect: [36, 30, 20, 44],
+          run: () => ({ text: '便利店的灯是这条街上最亮的。', cost: 4, go: 'shop' })
+        },
+        {
+          id: 'gohall',
+          label: '回楼道',
+          rect: [4, 70, 20, 24],
+          run: () => ({ text: '你回到楼道里。声控灯这次亮了。', cost: 6, go: 'hall' })
+        }
+      ]
+    },
+
+    /* ================= 便利店 ================= */
+    shop: {
+      title: '便利店 · 24 小时',
+      cls: 's-shop',
+      layer: () =>
+        '<div class="lyr far"></div>' +
+        '<div class="tube"></div>' +
+        '<div class="shelf"></div>' +
+        '<div class="counter"></div>' +
+        '<div class="boss" id="boss"></div>' +
+        '<div class="lyr near"></div>',
+      ambient: ['shop'],
+      hotspots: [
+        {
+          id: 'boss',
+          label: '店长',
+          rect: [62, 40, 16, 42],
+          run: (S) => {
+            if (!S.flags.metBoss) {
+              S.flags.metBoss = true;
+              S.rel.boss += 5;
+              return {
+                text:
+                  '「来了。」店长头也没抬，「今天能上吗？」\n' +
+                  '他手里在数一叠零钱，数到一半停了：「你脸色不好。」',
+                cost: 10
+              };
+            }
+            if (!S.flags.askedBoss) {
+              S.flags.askedBoss = true;
+              return {
+                text:
+                  '「你妈前两天来买过一次药。」他说，「问我有没有便宜的。」\n' +
+                  '他把零钱理齐：「我没收她钱。」',
+                cost: 12,
+                effects: (s) => {
+                  s.flags.knowPills = true;
+                  s.rel.boss += 8;
+                }
+              };
+            }
+            return { text: '「要上就上，不上我找别人。」', cost: 5 };
+          }
+        },
+        {
+          id: 'shelf',
+          label: '货架',
+          rect: [8, 34, 30, 40],
+          run: (S) => ({
+            text: '泡面，面包，最便宜的那种饼干。\n你算了算，够吃四天。',
+            cost: 6
+          })
+        },
+        {
+          id: 'buy',
+          label: '买点吃的',
+          rect: [10, 76, 22, 14],
+          run: (S) =>
+            S.money < 12
+              ? { text: '你摸了摸口袋。不够。', cost: 4 }
+              : {
+                  text: '你买了两个面包，一瓶水。十二块。',
+                  cost: 8,
+                  effects: (s) => {
+                    s.money -= 12;
+                    s.food += 2;
+                    s.stamina = Math.min(100, s.stamina + 8);
+                  }
+                }
+        },
+        {
+          id: 'work',
+          label: '上一天班',
+          rect: [62, 78, 24, 14],
+          run: (S) =>
+            S.stamina < 25
+              ? { text: '你站了一会儿，眼前发黑。今天上不了。', cost: 6 }
+              : {
+                  text:
+                    '八个小时。\n' +
+                    '中间有个人来买烟，问你要不要一起走。你说不去。\n' +
+                    '天黑了。',
+                  cost: 480,
+                  effects: (s) => {
+                    s.money += 85;
+                    s.stamina = Math.max(0, s.stamina - 32);
+                    s.flags.worked = true;
+                    s.rel.boss += 6;
+                  }
+                }
+        },
+        {
+          id: 'out',
+          label: '出去',
+          rect: [4, 20, 8, 60],
+          run: () => ({ text: '门上的铃铛响了一声。', cost: 2, go: 'street' })
+        }
+      ]
+    },
+
+    /* ================= 母亲家 ================= */
+    home: {
+      title: '临江 · 老家属院 3 单元',
+      cls: 's-home',
+      layer: () =>
+        '<div class="lyr far"></div>' +
+        '<div class="warmlamp"></div>' +
+        '<div class="mother-figure"></div>' +
+        '<div class="table"></div>' +
+        '<div class="bowls"></div>' +
+        '<div class="locked-door"></div>' +
+        '<div class="lyr near"></div>',
+      ambient: ['room', 'hum'],
+      hotspots: [
+        {
+          id: 'mother',
+          label: '母亲',
+          rect: [54, 30, 22, 42],
+          run: (S) => {
+            if (!S.flags.talkedMother) {
+              S.flags.talkedMother = true;
+              S.rel.mother += 5;
+              return {
+                text:
+                  '她坐在灯下面，手在择菜，眼睛没看你。\n' +
+                  '「吃了没有。」\n' +
+                  '（你可以直接跟她说话——在下面输入框里。）',
+                cost: 15
+              };
+            }
+            return {
+              text: '她还在择菜。那把菜已经被择过一遍了。',
+              cost: 6
+            };
+          }
+        },
+        {
+          id: 'table',
+          label: '饭桌',
+          rect: [22, 56, 38, 18],
+          run: (S) => ({
+            text: S.food > 0 ? '两碗饭。一碗是给你的，还热着。' : '两碗饭。你坐下来吃了。',
+            cost: 25,
+            effects: (s) => {
+              s.stamina = Math.min(100, s.stamina + 18);
+              s.food = Math.max(0, s.food - 1);
+              s.rel.mother += 3;
+            }
+          })
+        },
+        {
+          id: 'pills',
+          label: '柜子上的药瓶',
+          rect: [80, 52, 8, 12],
+          run: (S) => {
+            if (S.seen.pills) return { text: '瓶子还是那些。少的那几种，她没再买。', cost: 4 };
+            S.seen.pills = true;
+            S.flags.knowPills = true;
+            return {
+              text:
+                '三种药。两种是新的，一种是去年的，标签都磨掉了。\n' +
+                '盒子背面写着用法：一天两次。\n' +
+                '剩的量不对——按一天两次，早就该吃完了。',
+              cost: 12,
+              effects: (s) => {
+                s.flags.knowStopMeds = true;
+              }
+            };
+          }
+        },
+        {
+          id: 'locked',
+          label: '锁着的那间屋',
+          rect: [4, 24, 13, 46],
+          run: () => ({
+            text: '门锁着。\n你小时候这间屋是开着的。\n你没问过什么时候锁上的。',
+            cost: 8
+          })
+        },
+        {
+          id: 'leave',
+          label: '走',
+          rect: [44, 84, 14, 12],
+          run: () => ({ text: '你站起来。她没抬头。', cost: 3, go: '__end__' })
+        }
+      ]
+    }
+  };
+
+  root.WORLD_SCENES = SCENES;
+  root.hm = hm;
+})(typeof self !== 'undefined' ? self : this);
+
+</script>
+<script>
+/* world2.js */
+/* ============================================================
+   world2.js · 六个新场景 + 人物三层档案
+   与 world.js 的五个场景合并（film.js 里 Object.assign）
+   ============================================================ */
+(function (root) {
+  'use strict';
+
+  const S2 = {};
+
+  /* ============================================================
+     诊所
+     ============================================================ */
+  S2.clinic = {
+    title: '城关诊所 · 二层走廊',
+    cls: 's-clinic',
+    layer: () =>
+      '<div class="lyr far"></div>' +
+      '<div class="ttube"></div>' +
+      '<div class="doorway"></div>' +
+      '<div class="bench"></div>' +
+      '<div class="cab"></div>' +
+      '<div class="lyr near"></div>',
+    hotspots: [
+      {
+        id: 'doorway',
+        label: '走廊尽头的门',
+        rect: [44, 26, 12, 44],
+        run: (S) => {
+          if (!S.flags.clinicDoor) {
+            S.flags.clinicDoor = true;
+            return { text: '门里有人。\n你听见两个声音，一个在说「按上次的写」，另一个没说话。\n你敲门，里面立刻安静了。', cost: 12 };
+          }
+          return { text: '门关着。这次连声音都没有。', cost: 5 };
+        }
+      },
+      {
+        id: 'chart',
+        label: '病历本',
+        rect: [60, 56, 12, 14],
+        run: (S) => {
+          S.flags.knowChart = true;
+          return {
+            text: S.seen.chart
+              ? '还是那一页。撕口很齐，是从装订线那儿撕的。'
+              : '没人看着。你翻开。\n名字不是你。\n最后一页被撕掉了，撕口很齐。\n剩下的字里有一句：「建议转院」。',
+            cost: 8
+          };
+        }
+      },
+      {
+        id: 'cab',
+        label: '药柜',
+        rect: [78, 40, 14, 28],
+        run: () => ({ text: '一柜子白盒子。\n有一格锁着，锁是新的。', cost: 6 })
+      },
+      {
+        id: 'bench',
+        label: '长椅',
+        rect: [12, 60, 22, 12],
+        run: () => ({ text: '塑料椅面冰凉。\n第三个位置上有一块地方是干的，像有人一直坐在这儿。', cost: 5 })
+      },
+      {
+        id: 'clock',
+        label: '挂钟',
+        rect: [26, 22, 8, 10],
+        run: () => ({ text: '钟停了。\n指针指着四点四十七。', cost: 4 })
+      },
+      {
+        id: 'nurse',
+        label: '护士站',
+        rect: [66, 30, 14, 20],
+        run: (S) => {
+          if (!S.flags.metNurse) {
+            S.flags.metNurse = true;
+            return {
+              text: '护士抬头看了你一眼。\n「你上周来过。」\n「那个病人……你是她什么人？」\n她说完自己愣了一下，好像不该问。',
+              cost: 12,
+              voice: 'nurse'
+            };
+          }
+          return { text: '「我说过了，病历不能给你看。」', cost: 5, voice: 'nurse' };
+        }
+      },
+      {
+        id: 'down',
+        label: '下楼',
+        rect: [6, 30, 10, 34],
+        run: () => ({ text: '楼梯间的声控灯坏了一半。', cost: 6, go: 'street' })
+      }
+    ]
+  };
+
+  /* ============================================================
+     派出所
+     ============================================================ */
+  S2.police = {
+    title: '城关派出所 · 值班室',
+    cls: 's-police',
+    layer: () =>
+      '<div class="lyr far"></div>' +
+      '<div class="board"></div>' +
+      '<div class="desk"></div>' +
+      '<div class="lamp2"></div>' +
+      '<div class="lyr near"></div>',
+    hotspots: [
+      {
+        id: 'board2',
+        label: '案件板',
+        rect: [52, 18, 34, 38],
+        run: (S) => {
+          S.flags.sawBoard = true;
+          return {
+            text: S.seen.board2
+              ? '照片还在。有一张被翻过去了，你没敢翻回来。'
+              : '一整面墙的照片。\n最上面一行是十几年前的，纸都黄了。\n下面一行是新的。\n两张照片上的姿势一模一样。',
+            cost: 14
+          };
+        }
+      },
+      {
+        id: 'desk3',
+        label: '值班台',
+        rect: [14, 56, 34, 14],
+        run: () => ({ text: '登记簿摊开着。\n最后一页是今天凌晨三点多。\n签名那一栏是空的。', cost: 8 })
+      },
+      {
+        id: 'officer',
+        label: '值班民警',
+        rect: [24, 36, 12, 22],
+        run: (S) => {
+          if (!S.flags.metOfficer) {
+            S.flags.metOfficer = true;
+            return {
+              text: '「什么事。」\n你说你想问十几年前那件案子。\n他把笔放下，看了你很久。\n「你从哪儿听来的。」',
+              cost: 15,
+              voice: 'officer'
+            };
+          }
+          return { text: '「这个不归我管。」\n他低头继续写。笔尖一直在同一个地方。', cost: 6, voice: 'officer' };
+        }
+      },
+      {
+        id: 'camera',
+        label: '摄像头',
+        rect: [88, 12, 6, 8],
+        run: () => ({ text: '红灯没亮。\n镜头对着一把空椅子。', cost: 5 })
+      },
+      {
+        id: 'chair',
+        label: '椅子',
+        rect: [40, 58, 10, 12],
+        run: () => ({ text: '椅子腿有一道新划痕。\n地上还有一小块没擦干净的东西。', cost: 6 })
+      },
+      {
+        id: 'form',
+        label: '表格',
+        rect: [50, 60, 10, 10],
+        run: () => ({ text: '一张报案表。\n「是否认识死者」那一栏，打了两个勾。', cost: 8 })
+      },
+      {
+        id: 'out',
+        label: '出去',
+        rect: [4, 32, 8, 30],
+        run: () => ({ text: '外面的雨小了一点。', cost: 4, go: 'street' })
+      }
+    ]
+  };
+
+  /* ============================================================
+     殡仪馆
+     ============================================================ */
+  S2.funeral = {
+    title: '殡仪馆 · 冷藏间',
+    cls: 's-funeral',
+    layer: () =>
+      '<div class="lyr far"></div>' +
+      '<div class="wall"></div>' +
+      '<div class="open"></div>' +
+      '<div class="lyr near"></div>',
+    hotspots: [
+      {
+        id: 'open',
+        label: '半开的抽屉',
+        rect: [41, 30, 15, 26],
+        run: (S) => {
+          if (!S.flags.openedDrawer) {
+            S.flags.openedDrawer = true;
+            return {
+              text: '你拉开它。\n里面是空的。\n但底板上有一道压痕，形状很新——像刚刚才有人躺过，又被推走了。',
+              cost: 18
+            };
+          }
+          return { text: '还是空的。你不敢再拉第二次。', cost: 6 };
+        }
+      },
+      {
+        id: 'list',
+        label: '登记名单',
+        rect: [66, 34, 12, 16],
+        run: () => ({ text: '一列名字，一列日期。\n你的名字在最后一行。\n日期是明天。', cost: 16 })
+      },
+      {
+        id: 'wreath',
+        label: '花圈',
+        rect: [14, 40, 14, 24],
+        run: () => ({ text: '缎带上的名字被剪掉了。\n只剩两个字：对不起。', cost: 8 })
+      },
+      {
+        id: 'attendant2',
+        label: '管理员',
+        rect: [78, 36, 12, 22],
+        run: (S) => {
+          if (!S.flags.metAttendant) {
+            S.flags.metAttendant = true;
+            return {
+              text: '「今天没有安排。」\n他一直在擦手。\n你说你只是来看看。\n他停下来：「看什么？」',
+              cost: 14,
+              voice: 'attendant2'
+            };
+          }
+          return { text: '他背对着你，肩膀一直在动。', cost: 6, voice: 'attendant2' };
+        }
+      },
+      {
+        id: 'cold',
+        label: '冷柜',
+        rect: [26, 26, 14, 20],
+        run: () => ({ text: '门没关严。\n冷气从缝里出来，带着一股味道。\n霜上有一个手印，是从里面按的。', cost: 12 })
+      },
+      {
+        id: 'out2',
+        label: '出去',
+        rect: [4, 34, 8, 28],
+        run: () => ({ text: '走廊很长，灯一盏一盏在你身后灭。', cost: 6, go: 'street' })
+      }
+    ]
+  };
+
+  /* ============================================================
+     旧宅
+     ============================================================ */
+  S2.oldhouse = {
+    title: '西街 17 号 · 那间屋',
+    cls: 's-oldhouse',
+    layer: () =>
+      '<div class="lyr far"></div>' +
+      '<div class="doorway"></div>' +
+      '<div class="seal"></div>' +
+      '<div class="dust"></div>' +
+      '<div class="lyr near"></div>',
+    hotspots: [
+      {
+        id: 'seal',
+        label: '门上的封条',
+        rect: [32, 44, 36, 8],
+        run: (S) => {
+          if (!S.flags.brokeSeal) {
+            S.flags.brokeSeal = true;
+            S.flags.knowOldCase = true;
+            return {
+              text: '封条是十几年前的，胶早就干了。\n你把它揭下来，纸一碰就碎。\n背面盖着日期，还有一枚模糊的章。',
+              cost: 15
+            };
+          }
+          return { text: '封条断成两半，掉在地上。', cost: 5 };
+        }
+      },
+      {
+        id: 'door4',
+        label: '门',
+        rect: [38, 18, 24, 58],
+        run: () => ({ text: '门没锁。\n推开一条缝，里面比外面还冷。', cost: 8, go: 'oldinside' })
+      },
+      {
+        id: 'floor',
+        label: '地上的灰',
+        rect: [14, 62, 20, 12],
+        run: () => ({ text: '灰很厚，只有一条路是干净的。\n有人一直在这条路上走，走到门口就停。', cost: 10 })
+      },
+      {
+        id: 'walls',
+        label: '墙上的划痕',
+        rect: [70, 34, 14, 24],
+        run: () => ({ text: '一排竖线，一共四十七道。\n最后一道比别的都深，像是用指甲刻的。', cost: 10 })
+      },
+      {
+        id: 'photo',
+        label: '旧照片',
+        rect: [8, 34, 10, 16],
+        run: () => ({ text: '一张发黄的照片，钉在墙上。\n四个人，站成一排，脸都被划了。\n只有一个人没有——那个人是你。', cost: 16 })
+      },
+      {
+        id: 'out3',
+        label: '离开',
+        rect: [88, 34, 8, 28],
+        run: () => ({ text: '你退到街上。西街的灯坏了两年，一直没人修。', cost: 6, go: 'street' })
+      }
+    ]
+  };
+
+  /* ============================================================
+     旧宅 · 屋内
+     ============================================================ */
+  S2.oldinside = {
+    title: '西街 17 号 · 屋内',
+    cls: 's-oldhouse',
+    layer: () =>
+      '<div class="lyr far"></div>' +
+      '<div class="dust"></div>' +
+      '<div class="lyr near"></div>',
+    hotspots: [
+      {
+        id: 'bed2',
+        label: '床',
+        rect: [10, 52, 26, 16],
+        run: () => ({ text: '床板上还有一层旧床单。\n中间有一块塌下去的地方。\n你伸手按了按，还是软的。', cost: 14 })
+      },
+      {
+        id: 'drawer',
+        label: '抽屉',
+        rect: [44, 54, 14, 14],
+        run: (S) => {
+          if (!S.flags.foundDrawer) {
+            S.flags.foundDrawer = true;
+            return {
+              text: '抽屉里有一把小刀，刀柄上缠着布。\n布已经硬了。\n刀下面压着一张纸，上面只有一个地址：临江路 3 号。',
+              cost: 20
+            };
+          }
+          return { text: '刀还在。你没敢碰第二次。', cost: 6 };
+        }
+      },
+      {
+        id: 'mirror2',
+        label: '镜子',
+        rect: [64, 24, 12, 22],
+        run: () => ({ text: '镜子裂了，从中间。\n你在裂缝里看见自己，分成了两半。', cost: 10 })
+      },
+      {
+        id: 'window4',
+        label: '窗',
+        rect: [78, 22, 14, 26],
+        run: () => ({ text: '从这儿能看见对面楼。\n那扇一直亮着的窗，今天灭了。', cost: 8 })
+      },
+      {
+        id: 'back',
+        label: '出去',
+        rect: [4, 34, 8, 28],
+        run: () => ({ text: '你回到走廊。', cost: 4, go: 'oldhouse' })
+      }
+    ]
+  };
+
+  /* ============================================================
+     江边
+     ============================================================ */
+  S2.river = {
+    title: '临江 · 堤岸',
+    cls: 's-river',
+    layer: () =>
+      '<div class="lyr far"></div>' +
+      '<div class="water"></div>' +
+      '<div class="rain"></div>' +
+      '<div class="rail"></div>' +
+      '<div class="bridge"></div>' +
+      '<div class="lyr near"></div>',
+    hotspots: [
+      {
+        id: 'railing',
+        label: '护栏',
+        rect: [4, 46, 92, 10],
+        run: () => ({ text: '护栏上有一段是新焊的。\n焊缝很亮，锈还没上来。', cost: 8 })
+      },
+      {
+        id: 'water2',
+        label: '水面',
+        rect: [20, 60, 52, 16],
+        run: () => ({ text: '水面很平。\n雨点落上去，一圈一圈散开，又合上。\n底下什么都看不见。', cost: 10 })
+      },
+      {
+        id: 'stone',
+        label: '堤石',
+        rect: [70, 58, 10, 10],
+        run: () => ({ text: '石头上刻着两个名字，中间画了一道。\n刻痕很深，是用刀一刻一刻凿出来的。', cost: 12 })
+      },
+      {
+        id: 'lamp3',
+        label: '堤灯',
+        rect: [12, 26, 7, 14],
+        run: () => ({ text: '只亮这一盏。\n灯下没有人，但地上有一圈干的。', cost: 6 })
+      },
+      {
+        id: 'bridge',
+        label: '桥',
+        rect: [56, 36, 36, 12],
+        run: () => ({ text: '桥上没有车。\n只有一个人，站在桥中间，一直没动。', cost: 10 })
+      },
+      {
+        id: 'back2',
+        label: '回去',
+        rect: [88, 30, 8, 26],
+        run: () => ({ text: '你往回走。', cost: 8, go: 'street' })
+      }
+    ]
+  };
+
+  /* ============================================================
+     菜市场
+     ============================================================ */
+  S2.market = {
+    title: '西门菜市场 · 雨棚下',
+    cls: 's-market',
+    layer: () =>
+      '<div class="lyr far"></div>' +
+      '<div class="canopy"></div>' +
+      '<div class="stalls"></div>' +
+      '<div class="puddle"></div>' +
+      '<div class="lyr near"></div>',
+    hotspots: [
+      {
+        id: 'vendor',
+        label: '摊主',
+        rect: [18, 44, 12, 20],
+        run: (S) => {
+          if (!S.flags.metVendor) {
+            S.flags.metVendor = true;
+            return {
+              text: '「今天不卖。」\n他正在收摊，手很快。\n你问他西街那件事，他停了。\n「你问这个干什么。」',
+              cost: 12,
+              voice: 'vendor'
+            };
+          }
+          return { text: '他把最后一箱东西搬上车，没再看你。', cost: 5, voice: 'vendor' };
+        }
+      },
+      {
+        id: 'box',
+        label: '纸箱',
+        rect: [36, 52, 12, 14],
+        run: () => ({ text: '箱子上写着「402」。\n封口胶是新的。\n你晃了晃，里面有玻璃响。', cost: 12 })
+      },
+      {
+        id: 'radio',
+        label: '收音机',
+        rect: [56, 44, 10, 10],
+        run: () => ({ text: '在放戏曲。\n中间插了一段寻人启事，念到一个名字时，信号断了。', cost: 10 })
+      },
+      {
+        id: 'canopy',
+        label: '雨棚',
+        rect: [4, 4, 92, 26],
+        run: () => ({ text: '塑料布被雨砸得直响。\n有一处破口，水顺着那儿往下淌，淌成一条线。', cost: 6 })
+      },
+      {
+        id: 'puddle2',
+        label: '地上的水',
+        rect: [24, 66, 30, 12],
+        run: () => ({ text: '水里映着灯泡。\n灯晃了一下，倒影里的东西没有跟着晃。', cost: 10 })
+      },
+      {
+        id: 'out4',
+        label: '出去',
+        rect: [88, 34, 8, 26],
+        run: () => ({ text: '你走出雨棚。雨还在下。', cost: 6, go: 'street' })
+      }
+    ]
+  };
+
+  /* ============================================================
+     人物三层档案：过去 / 现在 / 未来
+     ============================================================ */
+  const STORY = {
+    mother: {
+      past: '二十五年前纺织厂下岗，她没告诉任何人，第二天照常六点出门，在街上走到天黑。',
+      now: '每天六点起床，把昨天的饭热一遍。药盒藏在柜子最里面。',
+      future: '她攒了一笔钱，够办一场不麻烦任何人的事。她已经想好了放在哪儿。'
+    },
+    aunt: {
+      past: '她儿子十八岁那年走了，再没回来。她从此每天在楼梯口坐半个钟头。',
+      now: '她替整栋楼收快递，谁的都收，包括已经搬走的人。',
+      future: '她打算把房子过户给一个不认识的年轻人，只因为那人也叫她「阿姨」。'
+    },
+    landlord: {
+      past: '他年轻时在厂里做保卫，那件案子的第一批人里就有他。',
+      now: '他每月来收一次租，从不进屋，只在门口站着。',
+      future: '他想把那间屋卖掉，但每次中介来，他都临时改口。'
+    },
+    boss: {
+      past: '他见过死者最后一面。那天她买了一瓶水，没给钱，他也没要。',
+      now: '他每天数零钱，数到一半会停。',
+      future: '他准备关店，回老家。票已经买好了，一直没走。'
+    },
+    nurse: {
+      past: '她是第一个发现病历少了一页的人，但她没上报。',
+      now: '她值夜班，从不多问。',
+      future: '她打算辞职。辞职信写了三遍，都没交。'
+    },
+    officer: {
+      past: '十几年前那件案子，是他接的第一个警。他到现在还留着那本笔记。',
+      now: '他每天坐在同一把椅子上，等一个不会来的电话。',
+      future: '他快退休了。他想在退休前把这件事弄清楚，又怕弄清楚。'
+    },
+    priest: {
+      past: '十几年前，死者来过教堂。她坐在最后一排，什么也没说。',
+      now: '他每天擦一遍圣像，擦到脸那里就停。',
+      future: '他准备离开这座城。他已经把行李收好了三次。'
+    },
+    attendant2: {
+      past: '他推过那具尸体。他记得重量，记得那天在下雨。',
+      now: '他每天擦手，一天要擦几十遍。',
+      future: '他想把那晚的事写下来，写了就烧。'
+    }
+  };
+
+  root.SCENES2 = S2;
+  root.NPC_STORY = STORY;
+})(typeof self !== 'undefined' ? self : this);
+
+</script>
+<script>
+/* city.js */
+/* ============================================================
+   city.js · 《妄》· 世界数据
+   25 个地点 × 4 个时段 × 3 个变体 = 300 个场景（由 gen2.js 生成）
+   每个地点 8–12 件可交互道具；30 个 NPC；12 枚真相碎片
+   ============================================================ */
+(function (root) {
+  'use strict';
+
+  /* ---------------- 地点 ---------------- */
+  const PLACES = {
+    room: { name: '出租屋', pal: 'warm', floor: 1, props: ['bed', 'window', 'desk', 'lamp', 'mirror', 'note', 'bag', 'door'], exits: ['hall'] },
+    hall: { name: '四层走廊', pal: 'cold', floor: 4, props: ['neighbor', 'door3', 'stairwin', 'pipe', 'bulb', 'stain', 'down'], exits: ['room', 'stairwell'] },
+    stairwell: { name: '楼梯间', pal: 'cold', floor: 3, props: ['rail', 'window2', 'shoes', 'trash', 'down', 'up'], exits: ['hall', 'lobby'] },
+    lobby: { name: '门厅', pal: 'cold', floor: 1, props: ['mailbox', 'notice', 'bike', 'mop', 'out', 'up'], exits: ['stairwell', 'yard'] },
+    yard: { name: '院子', pal: 'night', floor: 1, props: ['tree', 'bench', 'tap', 'clothes', 'gate', 'cat'], exits: ['lobby', 'street'] },
+    street: { name: '临江路', pal: 'night', floor: 1, props: ['lamp_s', 'board', 'figure', 'busstop', 'manhole', 'shopfront', 'puddle'], exits: ['yard', 'corner', 'busstop', 'shop'] },
+    corner: { name: '街角', pal: 'night', floor: 1, props: ['phonebooth', 'poster', 'bin', 'vendor', 'alley'], exits: ['street', 'market'] },
+    busstop: { name: '公交站', pal: 'night', floor: 1, props: ['sign', 'shelter', 'timetable', 'cig', 'seat'], exits: ['street', 'station'] },
+    shop: { name: '便利店', pal: 'cold', floor: 1, props: ['counter', 'shelf', 'fridge', 'boss', 'register', 'magazine', 'doorbell'], exits: ['street', 'noodle'] },
+    noodle: { name: '面馆', pal: 'warm', floor: 1, props: ['table', 'bowl', 'steam', 'owner', 'menu', 'tv'], exits: ['shop', 'street'] },
+    clinic: { name: '诊所', pal: 'white', floor: 1, props: ['desk2', 'cabinet', 'scale', 'poster2', 'nurse', 'chart'], exits: ['street', 'pharmacy'] },
+    pharmacy: { name: '药店', pal: 'white', floor: 1, props: ['shelf2', 'clerk', 'scale2', 'prescription', 'curtain'], exits: ['clinic', 'street'] },
+    police: { name: '派出所', pal: 'cold', floor: 1, props: ['desk3', 'officer', 'board2', 'camera', 'chair', 'form'], exits: ['street'] },
+    bank: { name: '银行', pal: 'white', floor: 1, props: ['atm', 'queue', 'teller', 'slip', 'camera2'], exits: ['street'] },
+    market: { name: '旧货市场', pal: 'warm', floor: 1, props: ['stall', 'radio', 'clock2', 'clothes2', 'seller', 'box'], exits: ['corner', 'alley'] },
+    netbar: { name: '网吧', pal: 'dark', floor: 2, props: ['row', 'screen', 'attendant', 'ashtray', 'headset', 'clock3'], exits: ['alley', 'street'] },
+    alley: { name: '后巷', pal: 'dark', floor: 1, props: ['dumpster', 'puddle2', 'wire', 'door4', 'rat'], exits: ['market', 'netbar', 'garage'] },
+    rooftop: { name: '天台', pal: 'night', floor: 7, props: ['tank', 'antenna', 'clothes2', 'edge', 'cig2'], exits: ['hall'] },
+    garage: { name: '地下车库', pal: 'dark', floor: -1, props: ['pillar', 'car', 'drip', 'sign2', 'ramp'], exits: ['alley', 'lobby'] },
+    park: { name: '江边公园', pal: 'night', floor: 1, props: ['swing', 'tree2', 'bench2', 'lamp2', 'river', 'dog'], exits: ['street', 'river'] },
+    church: { name: '教堂', pal: 'warm', floor: 1, props: ['pew', 'statue', 'candle', 'priest', 'book', 'bell'], exits: ['street'] },
+    funeral: { name: '殡仪馆', pal: 'white', floor: 1, props: ['hall2', 'coffin', 'wreath', 'list', 'attendant2', 'cold'], exits: ['street'] },
+    school: { name: '小学', pal: 'warm', floor: 2, props: ['desk4', 'blackboard', 'bell2', 'janitor', 'poster3', 'gate2'], exits: ['street'] },
+    factory: { name: '废弃工厂', pal: 'dark', floor: 1, props: ['machine', 'chain', 'window3', 'oil', 'helmet', 'door5'], exits: ['alley'] },
+    river: { name: '江边', pal: 'night', floor: 0, props: ['railing', 'boat', 'fog', 'stone', 'lamp3'], exits: ['park', 'station'] },
+    station: { name: '火车站', pal: 'cold', floor: 1, props: ['board3', 'bench3', 'clock4', 'ticket', 'guard', 'platform'], exits: ['busstop', 'river'] }
+  };
+
+  /* ---------------- 道具：每种三条随机描述 ---------------- */
+  const PROPS = {
+    bed: { label: '床', shape: 'bed', lines: ['被子掀开着，像有人刚起来。', '枕头上有两个凹痕。', '床底下有东西，你没敢看。'] },
+    window: { label: '窗', shape: 'window', lines: ['外面在下雨。对面楼有一扇窗亮着。', '玻璃上有一个手印，在外侧。', '雨顺着玻璃往下走，走出几条路。'] },
+    desk: { label: '桌子', shape: 'desk', lines: ['桌面上有一圈水渍。', '抽屉卡住了，拉不开。', '桌角被磨得很亮，像被很多人摸过。'] },
+    lamp: { label: '台灯', shape: 'lamp', lines: ['灯罩上有一层灰。', '灯泡是新的，别人换的。', '开关有点烫。'] },
+    lamp_s: { label: '路灯', shape: 'lamp', lines: ['灯下有一圈干的。', '灯泡在闪。', '灯罩上有一个弹孔。'] },
+    mirror: { label: '镜子', shape: 'mirror', lines: ['镜子里的人比你慢半拍。', '镜子上有一个手印，比你的高。', '你不记得自己长这样。'] },
+    note: { label: '字条', shape: 'paper', lines: ['一行字，最后一个字拖得很长。', '纸上有一块干了的水痕。', '背面还有字，被撕掉了。'] },
+    bag: { label: '背包', shape: 'bag', lines: ['钱包，工牌，一包没拆的烟。', '里面有一张过期的车票。', '夹层里有一张照片，脸被剪掉了。'] },
+    door: { label: '门', shape: 'door', lines: ['门框上有一道旧划痕。', '锁孔是新的。', '门缝底下塞着一张纸。'] },
+    neighbor: { label: '隔壁的门', shape: 'door', lines: ['门里有广播的声音。', '门口放着一双鞋，摆得很齐。', '门上的猫眼从里面被堵住了。'] },
+    door3: { label: '三楼的门', shape: 'door', lines: ['敲门没人应。', '门里有人走路，走到门边停住了。', '门把手上有一层灰，只有一处干净。'] },
+    stairwin: { label: '楼梯窗', shape: 'window', lines: ['雨把窗糊住了。', '楼下有人在收伞，收了很久。', '窗台上有半个脚印。'] },
+    pipe: { label: '水管', shape: 'pipe', lines: ['水管在响，像有人在里面走。', '管子上缠着一圈胶带。', '水滴在铁皮上，一声一声。'] },
+    bulb: { label: '声控灯', shape: 'bulb', lines: ['你跺了一下脚，它没亮。', '灯泡是坏的，但还在响。', '灯罩里有虫子的尸体。'] },
+    stain: { label: '墙上的污渍', shape: 'stain', lines: ['像一块地图。', '边缘被擦过，没擦干净。', '你凑近看，它像一个人形。'] },
+    down: { label: '下楼', shape: 'arrow', lines: ['楼梯很陡。', '台阶上有一级是新的。', '你数了数，比昨天多了一级。'] },
+    up: { label: '上楼', shape: 'arrow', lines: ['上面很黑。', '有人在上面咳嗽。', '扶手是湿的。'] },
+    rail: { label: '扶手', shape: 'rail', lines: ['扶手上有一处被摸得发亮。', '有一段是断的。', '上面挂着一条围巾。'] },
+    window2: { label: '窗', shape: 'window', lines: ['从这里能看到院子。', '玻璃裂了一道，像闪电。', '外面有个人站着，不动。'] },
+    shoes: { label: '鞋', shape: 'shoe', lines: ['一双女式鞋，码数不对。', '鞋底有泥，这条街没有那种泥。', '鞋尖朝着门。'] },
+    trash: { label: '垃圾桶', shape: 'bin', lines: ['里面有几个外卖盒，都吃完了。', '有一张揉皱的单子。', '最底下是湿的。'] },
+    mailbox: { label: '信箱', shape: 'box', lines: ['402 的信箱塞满了。', '有一封信没有寄件人。', '锁是坏的。'] },
+    notice: { label: '公告栏', shape: 'board', lines: ['停水通知，日期是去年的。', '一张寻人启事，照片被撕了。', '最上面那张是新的。'] },
+    bike: { label: '自行车', shape: 'bike', lines: ['车锁着，但没锁在柱子上。', '车筐里有一把伞。', '后座上有一道压痕。'] },
+    mop: { label: '拖把', shape: 'mop', lines: ['还是湿的。', '水桶里的水是黑的。', '拖把头上有头发。'] },
+    out: { label: '出去', shape: 'arrow', lines: ['外面在下雨。', '门口有一滩水。', '你听见有人在叫名字。'] },
+    tree: { label: '树', shape: 'tree', lines: ['树上挂着几个塑料袋。', '树下有一圈干的地方。', '树皮上刻着两个名字。'] },
+    bench: { label: '长椅', shape: 'bench', lines: ['椅子上有一件外套。', '有人坐过，还是热的。', '椅背上写着字。'] },
+    tap: { label: '水龙头', shape: 'tap', lines: ['一直在滴水。', '水是黄的。', '龙头被拧得很紧，还是漏。'] },
+    clothes: { label: '晾着的衣服', shape: 'clothes', lines: ['衣服在滴水。', '有一件不是你的尺码。', '风一吹，它们像人在动。'] },
+    gate: { label: '院门', shape: 'door', lines: ['铁门锈了。', '门锁着，但能推开一条缝。', '门上贴着一张符。'] },
+    cat: { label: '猫', shape: 'cat', lines: ['它一直看着你。', '它不怕人。', '它嘴里叼着什么东西。'] },
+    board: { label: '公告栏', shape: 'board', lines: ['招工：夜班，包一顿饭，日结。', '下面一行小字：不押证。', '有人用圆珠笔写了两个字：别去。'] },
+    figure: { label: '站着不动的人', shape: 'figure', lines: ['没打伞。', '你走过去，他没有转头。', '他说：等一个说会回来的人。'] },
+    busstop: { label: '站牌', shape: 'sign', lines: ['末班车 21:40。', '站牌上写着三院。', '有一站被涂掉了。'] },
+    manhole: { label: '井盖', shape: 'circle', lines: ['盖子上有水。', '边上有撬痕。', '下面有声音。'] },
+    shopfront: { label: '卷帘门', shape: 'shutter', lines: ['拉下来一半。', '上面被人写了字。', '门缝里透出光。'] },
+    puddle: { label: '水洼', shape: 'puddle', lines: ['映着路灯。', '水里有一个人的倒影，比你多。', '水面上有油花。'] },
+    phonebooth: { label: '电话亭', shape: 'booth', lines: ['话筒挂在外面。', '投币口被堵住了。', '玻璃上有一串号码。'] },
+    poster: { label: '海报', shape: 'board', lines: ['寻人启事，照片是我。', '日期是三年前。', '被人撕掉了一角。'] },
+    bin: { label: '垃圾桶', shape: 'bin', lines: ['满了。', '里面有一件带血的衣服。', '最上面是一个空药盒。'] },
+    vendor: { label: '摊主', shape: 'figure', lines: ['他在打瞌睡。', '他抬头看了你一眼，又低下去。', '他说：今天不卖。'] },
+    alley: { label: '巷子', shape: 'arrow', lines: ['很窄。', '里面有股味道。', '尽头有一扇门。'] },
+    sign: { label: '站牌', shape: 'sign', lines: ['雨把字冲花了。', '有一站是空白。', '站牌下有人刻了一个日期。'] },
+    shelter: { label: '候车棚', shape: 'shelter', lines: ['顶棚漏水。', '长椅上有一个包。', '地上有一圈烟头。'] },
+    timetable: { label: '时刻表', shape: 'board', lines: ['最后一班被划掉了。', '有一行是新贴上去的。', '印刷日期是十年前的。'] },
+    cig: { label: '烟头', shape: 'stain', lines: ['还是热的。', '同一个牌子，十几根。', '摆成一个圈。'] },
+    seat: { label: '长椅', shape: 'bench', lines: ['有一块地方是干的。', '椅缝里塞着纸。', '你坐下去，它还是温的。'] },
+    counter: { label: '收银台', shape: 'desk', lines: ['上面有一台旧收银机。', '下面压着一张便签。', '台面上有一道刀痕。'] },
+    shelf: { label: '货架', shape: 'shelf', lines: ['泡面，面包，最便宜的饼干。', '有一格是空的。', '标签上的日期都过了。'] },
+    fridge: { label: '冰柜', shape: 'fridge', lines: ['里面结着霜。', '最底层有个东西被包着。', '门关不严。'] },
+    boss: { label: '店长', shape: 'figure', lines: ['他在数零钱，数到一半停了。', '他说：你脸色不好。', '他一直在看门口。'] },
+    register: { label: '收银机', shape: 'desk', lines: ['抽屉是开的。', '里面少了一叠。', '打印纸卷卡住了。'] },
+    magazine: { label: '杂志架', shape: 'shelf', lines: ['最上面那本被人翻过。', '有一本日期是三年前的。', '封面被人划了。'] },
+    doorbell: { label: '门铃', shape: 'bulb', lines: ['响了一声。', '按钮是热的。', '线被剪断了。'] },
+    table: { label: '桌子', shape: 'desk', lines: ['桌上有一碗面。', '碗还热着。', '有两双筷子。'] },
+    bowl: { label: '碗', shape: 'bowl', lines: ['汤还剩一半。', '碗底压着一张纸。', '碗沿有一个缺口。'] },
+    steam: { label: '热气', shape: 'steam', lines: ['还在冒。', '味道很熟。', '你想起一个人。'] },
+    owner: { label: '老板', shape: 'figure', lines: ['他在后厨。', '他问你今天怎么这么早。', '他不记得你昨天来过。'] },
+    menu: { label: '菜单', shape: 'board', lines: ['有一道菜被划掉了。', '最下面写着「老样子」。', '价格是手写的。'] },
+    tv: { label: '电视', shape: 'tv', lines: ['在放新闻。', '信号不好。', '画面里有一个背影，像你。'] },
+    desk2: { label: '诊桌', shape: 'desk', lines: ['上面有一本病历。', '病历上的名字不是你。', '笔还没盖上。'] },
+    cabinet: { label: '药柜', shape: 'shelf', lines: ['有一格锁着。', '标签被撕掉了。', '里面有一瓶没有标签的药。'] },
+    scale: { label: '体重秤', shape: 'circle', lines: ['指针停在零。', '上面有一层灰。', '你站上去，它没动。'] },
+    poster2: { label: '人体图', shape: 'board', lines: ['上面画满了圈。', '有一处被红线标出来。', '图钉少了一个。'] },
+    nurse: { label: '护士', shape: 'figure', lines: ['她在写东西。', '她说：你上周来过。', '她抬头看了你一眼，又低头。'] },
+    chart: { label: '病历本', shape: 'paper', lines: ['有一页被撕掉了。', '上面写着「建议转院」。', '签名那一栏是空的。'] },
+    shelf2: { label: '药架', shape: 'shelf', lines: ['有一种药只剩最后一盒。', '有人在找什么。', '标签上写着处方药。'] },
+    clerk: { label: '店员', shape: 'figure', lines: ['他在打哈欠。', '他说：这个要处方。', '他看了你很久。'] },
+    scale2: { label: '柜台', shape: 'desk', lines: ['上面有一张单子。', '单子上的名字被涂了。', '笔是热的。'] },
+    prescription: { label: '处方', shape: 'paper', lines: ['字很潦草。', '上面有两种药。', '日期是昨天。'] },
+    curtain: { label: '帘子', shape: 'curtain', lines: ['后面有声音。', '帘子上有手印。', '拉不开。'] },
+    desk3: { label: '值班台', shape: 'desk', lines: ['上面有一本登记簿。', '最后一页是今天。', '笔挂在绳子上。'] },
+    officer: { label: '值班民警', shape: 'figure', lines: ['他问你什么事。', '他说这个不归他管。', '他一直在看你的鞋。'] },
+    board2: { label: '案件板', shape: 'board', lines: ['上面钉着几张照片。', '有一张被翻过去了。', '红线连到一半断了。'] },
+    camera: { label: '摄像头', shape: 'bulb', lines: ['红灯在闪。', '镜头对着门。', '线是断的。'] },
+    chair: { label: '椅子', shape: 'bench', lines: ['有人坐过。', '椅背上写着字。', '垫子是湿的。'] },
+    form: { label: '表格', shape: 'paper', lines: ['很多空。', '有一栏写着「是否认识死者」。', '笔尖断了。'] },
+    atm: { label: '取款机', shape: 'atm', lines: ['屏幕亮着。', '有人在里面留了一张卡。', '摄像头对着你的脸。'] },
+    queue: { label: '排队的人', shape: 'figure', lines: ['没有人说话。', '队伍不动。', '有一个人一直没往前走。'] },
+    teller: { label: '柜员', shape: 'figure', lines: ['她戴着口罩。', '她说：这个要本人来。', '她按了铃。'] },
+    slip: { label: '凭条', shape: 'paper', lines: ['金额不大。', '收款人是一个陌生名字。', '日期是三年前。'] },
+    camera2: { label: '监控', shape: 'bulb', lines: ['镜头上有灰。', '角度刚好避开柜台。', '线是新接的。'] },
+    stall: { label: '摊位', shape: 'shelf', lines: ['摆着旧钟表。', '老板不在。', '有一块表停在 4:47。'] },
+    radio: { label: '收音机', shape: 'tv', lines: ['在放戏曲。', '信号断断续续。', '里面有人念了一个名字。'] },
+    clock2: { label: '旧钟', shape: 'circle', lines: ['停了。', '指针指着四点四十七。', '背面刻着字。'] },
+    clothes2: { label: '旧衣服', shape: 'clothes', lines: ['有一件女式大衣。', '口袋里有东西。', '尺码和你母亲一样。'] },
+    seller: { label: '摊主', shape: 'figure', lines: ['他说这个不卖。', '他问你从哪来。', '他把东西收起来了。'] },
+    box: { label: '纸箱', shape: 'box', lines: ['封着胶带。', '上面写着 402。', '里面有玻璃响。'] },
+    row: { label: '机位', shape: 'shelf', lines: ['一半是空的。', '有一台还亮着。', '椅子被推开了。'] },
+    screen: { label: '屏幕', shape: 'tv', lines: ['停在一个页面。', '有人在搜索一个名字。', '搜索框里是你的名字。'] },
+    attendant: { label: '网管', shape: 'figure', lines: ['他在看剧。', '他说：32 号没人。', '他打了个哈欠。'] },
+    ashtray: { label: '烟灰缸', shape: 'bowl', lines: ['满了。', '有一根还燃着。', '灰里有纸片。'] },
+    headset: { label: '耳机', shape: 'circle', lines: ['还戴在椅子上。', '里面有声音。', '线缠得很紧。'] },
+    clock3: { label: '挂钟', shape: 'circle', lines: ['比你的手机慢十分钟。', '秒针在抖。', '钟面上有一道裂。'] },
+    dumpster: { label: '垃圾箱', shape: 'bin', lines: ['盖子是开的。', '里面有一个行李箱。', '味道很重。'] },
+    puddle2: { label: '积水', shape: 'puddle', lines: ['映着一点灯光。', '水是红的。', '你踩了一下，声音不对。'] },
+    wire: { label: '电线', shape: 'pipe', lines: ['垂到一半。', '被剪断了。', '还在冒火花。'] },
+    door4: { label: '后门', shape: 'door', lines: ['虚掩着。', '里面有光。', '门牌是新的。'] },
+    rat: { label: '老鼠', shape: 'cat', lines: ['它不动。', '它嘴里叼着东西。', '它看着你，没有跑。'] },
+    tank: { label: '水箱', shape: 'box', lines: ['在滴水。', '盖子上有锁。', '里面没有水声。'] },
+    antenna: { label: '天线', shape: 'pipe', lines: ['锈了。', '上面挂着一块布。', '风一吹就响。'] },
+    edge: { label: '栏杆', shape: 'rail', lines: ['不高。', '有一段是新的。', '下面是小区的院子。'] },
+    cig2: { label: '烟头', shape: 'stain', lines: ['还没灭。', '摆成一排。', '一共七根。'] },
+    pillar: { label: '柱子', shape: 'pipe', lines: ['上面有划痕。', '编号被涂掉了。', '背后藏着一个包。'] },
+    car: { label: '车', shape: 'car', lines: ['停了很久，落了灰。', '车窗是开的。', '车里有味道。'] },
+    drip: { label: '滴水', shape: 'steam', lines: ['一直在滴。', '声音很规律。', '地上已经有一滩。'] },
+    sign2: { label: '指示牌', shape: 'sign', lines: ['出口在左边。', '箭头被人改了。', '下面写着 B2。'] },
+    ramp: { label: '坡道', shape: 'arrow', lines: ['很陡。', '地上有轮胎印。', '尽头有光。'] },
+    swing: { label: '秋千', shape: 'swing', lines: ['在动。', '没有风。', '座上有一件外套。'] },
+    tree2: { label: '树', shape: 'tree', lines: ['树上有字。', '树干上钉着一块牌子。', '树下有花。'] },
+    bench2: { label: '长椅', shape: 'bench', lines: ['有人坐过。', '椅背上刻着两个人的名字。', '旁边有一个空酒瓶。'] },
+    lamp2: { label: '园灯', shape: 'lamp', lines: ['很暗。', '灯罩里进了水。', '灯下有一圈飞虫。'] },
+    river: { label: '江', shape: 'river', lines: ['水声很轻。', '江面上有雾。', '有人在对岸走动。'] },
+    dog: { label: '狗', shape: 'cat', lines: ['它在挖东西。', '它冲你叫了一声，又停了。', '它脖子上没有牌。'] },
+    pew: { label: '长椅', shape: 'bench', lines: ['前排的椅子是坏的。', '有人在上面留了一本书。', '椅下有东西。'] },
+    statue: { label: '圣像', shape: 'figure', lines: ['脸被磨平了。', '脚下有花。', '它在看你。'] },
+    candle: { label: '蜡烛', shape: 'bulb', lines: ['有一根还在烧。', '蜡油流了一桌。', '旁边有个名字。'] },
+    priest: { label: '神父', shape: 'figure', lines: ['他认识你。', '他说：你上次来是三个人。', '他没有再说话。'] },
+    book: { label: '登记簿', shape: 'paper', lines: ['记录着来的人。', '有一页被撕了。', '最后一行的名字是你的。'] },
+    bell: { label: '钟', shape: 'bell', lines: ['敲过一次。', '绳子被剪断了。', '声音会传很远。'] },
+    hall2: { label: '大厅', shape: 'shelf', lines: ['很冷。', '没有声音。', '有人坐在角落。'] },
+    coffin: { label: '棺', shape: 'box', lines: ['盖着。', '没有名牌。', '有人在里面敲。'] },
+    wreath: { label: '花圈', shape: 'circle', lines: ['名字被撕了。', '花是新的。', '有一条缎带写着「对不起」。'] },
+    list: { label: '名单', shape: 'board', lines: ['有一行被划掉。', '名字重复出现了一次。', '日期比今天早一天。'] },
+    attendant2: { label: '管理员', shape: 'figure', lines: ['他说今天没有安排。', '他一直在擦手。', '他不让你进去。'] },
+    cold: { label: '冷柜', shape: 'fridge', lines: ['门没关严。', '里面有一个空位。', '霜上有一个手印。'] },
+    blackboard: { label: '黑板', shape: 'board', lines: ['什么都没写。', '擦过的痕迹。', '角落里有一个名字。'] },
+    bell2: { label: '铃', shape: 'bell', lines: ['响了很久。', '校长室的灯亮着。', '没有人出来。'] },
+    janitor: { label: '门卫', shape: 'figure', lines: ['他在打盹。', '他说这里不对外。', '他一直在看登记本。'] },
+    poster3: { label: '班级照片', shape: 'board', lines: ['有一届缺了很多人。', '最后一排有个孩子被划掉了。', '照片发黄了。'] },
+    gate2: { label: '校门', shape: 'door', lines: ['锁着。', '门上有手印。', '旁边的砖是新砌的。'] },
+    machine: { label: '机器', shape: 'car', lines: ['停了。', '油污很厚。', '开关被按过。'] },
+    chain: { label: '铁链', shape: 'rail', lines: ['很粗。', '有一处被剪断。', '链子上有头发。'] },
+    window3: { label: '高窗', shape: 'window', lines: ['光从上面下来。', '玻璃是碎的。', '窗上有脚印。'] },
+    oil: { label: '油渍', shape: 'stain', lines: ['还是新的。', '像一个人倒下的形状。', '有拖过的痕迹。'] },
+    helmet: { label: '安全帽', shape: 'circle', lines: ['上面有名字。', '帽檐断了。', '里面是干的。'] },
+    door5: { label: '铁门', shape: 'door', lines: ['锁着。', '有人从里面敲过。', '门缝下面塞着东西。'] },
+    railing: { label: '护栏', shape: 'rail', lines: ['锈得厉害。', '有一段缺口。', '上面挂着一条围巾。'] },
+    boat: { label: '船', shape: 'car', lines: ['停在对岸。', '没有灯。', '有人在船上站着。'] },
+    fog: { label: '雾', shape: 'steam', lines: ['很厚。', '对面看不见。', '雾里有声音。'] },
+    stone: { label: '石头', shape: 'circle', lines: ['上面有刻字。', '被磨得很光。', '下面压着东西。'] },
+    lamp3: { label: '堤灯', shape: 'lamp', lines: ['只亮一盏。', '灯下没人。', '飞虫很多。'] },
+    board3: { label: '列车牌', shape: 'board', lines: ['末班车被取消了。', '有一趟不存在的车。', '目的地被刮掉。'] },
+    bench3: { label: '候车椅', shape: 'bench', lines: ['一排都是空的。', '有一个人坐着，头低着。', '椅子上有报纸。'] },
+    clock4: { label: '大钟', shape: 'circle', lines: ['比你的表快。', '指针在抖。', '停在 4:47 过一会儿又走。'] },
+    ticket: { label: '车票', shape: 'paper', lines: ['过期的。', '出发地是这里。', '终点被撕掉了。'] },
+    guard: { label: '站务员', shape: 'figure', lines: ['他在看表。', '他说最后一班走了。', '他问你去哪。'] },
+    platform: { label: '站台', shape: 'arrow', lines: ['没有人。', '风很大。', '铁轨在响。'] },
+    window3b: { label: '窗', shape: 'window', lines: ['外面是黑的。', '玻璃上有雾气。', '你抹开一块，看见自己。'] }
+  };
+
+  /* ---------------- 30 个 NPC ---------------- */
+  const NPCS = [
+    { id: 'mother', name: '母亲', role: '母亲', voice: { pitch: 0.85, rate: 0.85, tag: '低、慢' }, line: '饭在锅里。', secret: 4 },
+    { id: 'aunt', name: '邻居阿姨', role: '邻居', voice: { pitch: 1.15, rate: 0.95, tag: '亮、快' }, line: '你妈在楼梯口坐了半个钟头。', secret: 3 },
+    { id: 'landlord', name: '房东', role: '房东', voice: { pitch: 0.75, rate: 0.8, tag: '沉' }, line: '房租这个月涨了。', secret: 2 },
+    { id: 'boss', name: '店长', role: '店长', voice: { pitch: 0.95, rate: 1.0, tag: '平' }, line: '今天能上吗。', secret: 6 },
+    { id: 'clerk', name: '药店店员', role: '店员', voice: { pitch: 1.2, rate: 1.05, tag: '软' }, line: '这个要处方。', secret: 5 },
+    { id: 'nurse', name: '诊所护士', role: '护士', voice: { pitch: 1.25, rate: 1.0, tag: '轻' }, line: '你上周来过。', secret: 5 },
+    { id: 'officer', name: '值班民警', role: '警察', voice: { pitch: 0.7, rate: 0.9, tag: '硬' }, line: '这个不归我管。', secret: 7 },
+    { id: 'teller', name: '银行柜员', role: '柜员', voice: { pitch: 1.1, rate: 1.0, tag: '快' }, line: '这个要本人来。', secret: 9 },
+    { id: 'seller', name: '旧货摊主', role: '摊主', voice: { pitch: 0.8, rate: 0.75, tag: '哑' }, line: '这个不卖。', secret: 1 },
+    { id: 'attendant', name: '网管', role: '网管', voice: { pitch: 1.05, rate: 1.1, tag: '懒' }, line: '32 号没人。', secret: 8 },
+    { id: 'priest', name: '神父', role: '神父', voice: { pitch: 0.72, rate: 0.7, tag: '缓' }, line: '你上次来是三个人。', secret: 10 },
+    { id: 'attendant2', name: '殡仪馆管理员', role: '管理员', voice: { pitch: 0.9, rate: 0.72, tag: '冷' }, line: '今天没有安排。', secret: 11 },
+    { id: 'janitor', name: '小学门卫', role: '门卫', voice: { pitch: 0.82, rate: 0.8, tag: '糙' }, line: '这里不对外。', secret: 12 },
+    { id: 'guard', name: '站务员', role: '站务员', voice: { pitch: 0.92, rate: 1.0, tag: '公' }, line: '最后一班走了。', secret: 6 },
+    { id: 'owner', name: '面馆老板', role: '老板', voice: { pitch: 0.88, rate: 0.95, tag: '热' }, line: '今天怎么这么早。', secret: 3 },
+    { id: 'vendor', name: '街角摊主', role: '摊主', voice: { pitch: 1.0, rate: 0.9, tag: '油' }, line: '今天不卖。', secret: 1 },
+    { id: 'dogwalker', name: '遛狗的人', role: '路人', voice: { pitch: 1.18, rate: 0.95, tag: '散' }, line: '它不咬人。', secret: 8 },
+    { id: 'student', name: '放学的孩子', role: '小孩', voice: { pitch: 1.6, rate: 1.15, tag: '尖' }, line: '你也看见了吗。', secret: 12 },
+    { id: 'woman', name: '撑伞的女人', role: '路人', voice: { pitch: 1.12, rate: 0.8, tag: '淡' }, line: '别回头。', secret: 2 },
+    { id: 'oldman', name: '下棋的老人', role: '老人', voice: { pitch: 0.65, rate: 0.62, tag: '慢' }, line: '这楼以前死过人。', secret: 2 },
+    { id: 'courier', name: '快递员', role: '快递', voice: { pitch: 1.02, rate: 1.2, tag: '急' }, line: '402 没人签收。', secret: 4 },
+    { id: 'doctor', name: '老医生', role: '医生', voice: { pitch: 0.78, rate: 0.78, tag: '稳' }, line: '你母亲来过三次。', secret: 5 },
+    { id: 'cop2', name: '便衣', role: '便衣', voice: { pitch: 0.76, rate: 0.92, tag: '低' }, line: '你在场。', secret: 7 },
+    { id: 'cashier', name: '超市收银', role: '收银', voice: { pitch: 1.22, rate: 1.05, tag: '机' }, line: '一起还是分开。', secret: 9 },
+    { id: 'cleaner', name: '清洁工', role: '清洁', voice: { pitch: 0.86, rate: 0.7, tag: '闷' }, line: '那间屋我不进。', secret: 11 },
+    { id: 'driver', name: '出租司机', role: '司机', voice: { pitch: 0.74, rate: 0.95, tag: '糙' }, line: '这个点去殡仪馆？', secret: 11 },
+    { id: 'teacher', name: '女老师', role: '老师', voice: { pitch: 1.2, rate: 0.95, tag: '正' }, line: '那一届有个孩子没毕业。', secret: 12 },
+    { id: 'nun', name: '修女', role: '修女', voice: { pitch: 1.05, rate: 0.72, tag: '静' }, line: '她来过。', secret: 10 },
+    { id: 'kid', name: '楼道里的孩子', role: '小孩', voice: { pitch: 1.7, rate: 1.0, tag: '空' }, line: '他在等一个人。', secret: 4 },
+    { id: 'stranger', name: '站着不动的人', role: '陌生人', voice: { pitch: 0.68, rate: 0.6, tag: '无' }, line: '等一个说会回来的人。', secret: 1 }
+  ];
+
+  /* ---------------- 12 枚真相碎片 ---------------- */
+  const SECRETS = [
+    { id: 1, text: '三年前，同一条街，也死过一个人。', owner: '旧货摊主' },
+    { id: 2, text: '这栋楼里，四楼那间屋换过五个租客。', owner: '下棋的老人' },
+    { id: 3, text: '你母亲早就知道她是谁。', owner: '邻居阿姨' },
+    { id: 4, text: '有人每周三都来送一次饭，从不上楼。', owner: '快递员' },
+    { id: 5, text: '有一份病历被撕掉了一页，那一页写着「转院」。', owner: '诊所护士' },
+    { id: 6, text: '监控里，案发那晚只有两个人进出。', owner: '店长' },
+    { id: 7, text: '报案的人不是邻居，是一个不肯留名字的人。', owner: '值班民警' },
+    { id: 8, text: '网吧 32 号机的搜索记录里，全是同一个名字。', owner: '网管' },
+    { id: 9, text: '三年前有一笔汇款，收款人姓名和死者相同。', owner: '银行柜员' },
+    { id: 10, text: '教堂的登记簿上，同一行名字出现过两次。', owner: '神父' },
+    { id: 11, text: '殡仪馆的名单上，多了一个不该出现的人。', owner: '管理员' },
+    { id: 12, text: '小学那一届，有一个孩子被从合影里划掉了。', owner: '门卫' }
+  ];
+
+  const TRUTH =
+    '你不叫现在的这个名字。三年前死的那个人，才是原来的你。\n' +
+    '每三天你会在一个新的地方醒来——不是搬家，是有人在替你换一个能活下去的身份。\n' +
+    '而每一次，那间锁着的屋子都会跟着你。';
+
+  root.CITY = { PLACES, PROPS, NPCS, SECRETS, TRUTH, title: '妄' };
+})(typeof self !== 'undefined' ? self : this);
+
+</script>
+<script>
+/* voice.js */
+/* ============================================================
+   voice.js · 声线与音效
+   人物声线：浏览器内置 TTS（speechSynthesis），按 pitch/rate 区分
+   环境音效：Web Audio 现场合成，零素材
+   ============================================================ */
+(function (root) {
+  'use strict';
+
+  const V = {
+    enabled: false,
+    ready: false,
+    zh: null,
+
+    init() {
+      if (!('speechSynthesis' in window)) return;
+      const pick = () => {
+        const vs = speechSynthesis.getVoices();
+        this.zh =
+          vs.find((v) => /zh[-_]CN|Chinese|中文|普通话/i.test(v.lang + v.name)) || null;
+        this.ready = true;
+      };
+      pick();
+      speechSynthesis.onvoiceschanged = pick;
+    },
+
+    /** profile: { pitch, rate, tag } —— 拆句 + 每句微调，去掉机器的平 */
+    say(text, profile, onEnd) {
+      const raw = String(text || '').trim();
+      if (!this.enabled || !raw) {
+        if (onEnd) setTimeout(onEnd, Math.min(2600, 60 * raw.length));
+        return;
+      }
+      try {
+        speechSynthesis.cancel();
+        let parts = raw
+          .split(/[，。！？；\n…]+/)
+          .map((s) => s.trim())
+          .filter((s) => s.length > 0)
+          .slice(0, 6);
+        if (!parts.length) parts = [raw];
+
+        const basePitch = Math.max(0, Math.min(2, (profile && profile.pitch) || 1));
+        const baseRate = Math.max(0.5, Math.min(2, (profile && profile.rate) || 1));
+
+        parts.forEach((piece, i) => {
+          const u = new SpeechSynthesisUtterance(piece);
+          u.lang = 'zh-CN';
+          if (this.zh) u.voice = this.zh;
+          const j = ((i % 3) - 1) * 0.04;
+          u.pitch = Math.max(0, Math.min(2, basePitch + j));
+          u.rate = Math.max(0.5, Math.min(2, baseRate + j * 0.6));
+          u.volume = 0.85;
+          if (i === parts.length - 1 && onEnd) u.onend = onEnd;
+          speechSynthesis.speak(u);
+        });
+      } catch (e) {
+        if (onEnd) setTimeout(onEnd, 900);
+      }
+    },
+
+    stop() {
+      try {
+        speechSynthesis.cancel();
+      } catch (e) {}
+    }
+  };
+
+  /* ---------------- 音效 ---------------- */
+  const S = {
+    ctx: null,
+    master: null,
+    buf: null,
+    ok: false,
+
+    start() {
+      if (this.ok) return;
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      try {
+        this.ctx = new AC();
+        const p = this.ctx.resume();
+        if (p && p.catch) p.catch(() => {});
+      } catch (e) {
+        return;
+      }
+      this.master = this.ctx.createGain();
+      this.master.gain.value = 0.9;
+      this.master.connect(this.ctx.destination);
+      this.buf = this.noise(5);
+      this.ambient();
+      this.ok = true;
+    },
+
+    noise(sec) {
+      const ctx = this.ctx;
+      const len = Math.floor(ctx.sampleRate * sec);
+      const b = ctx.createBuffer(1, len, ctx.sampleRate);
+      const d = b.getChannelData(0);
+      let b0 = 0, b1 = 0, b2 = 0;
+      for (let i = 0; i < len; i++) {
+        const w = Math.random() * 2 - 1;
+        b0 = 0.99765 * b0 + w * 0.099046;
+        b1 = 0.963 * b1 + w * 0.2965164;
+        b2 = 0.57 * b2 + w * 1.0526913;
+        d[i] = (b0 + b1 + b2 + w * 0.1848) * 0.09;
+      }
+      return b;
+    },
+
+    ambient() {
+      const ctx = this.ctx;
+      const src = ctx.createBufferSource();
+      src.buffer = this.buf;
+      src.loop = true;
+      const lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.value = 620;
+      const g = ctx.createGain();
+      g.gain.value = 0.06;
+      src.connect(lp);
+      lp.connect(g);
+      g.connect(this.master);
+      src.start();
+      this.ambGain = g;
+    },
+
+    /** 一次性音效 */
+    hit(kind) {
+      if (!this.ok) return;
+      const ctx = this.ctx;
+      const t = ctx.currentTime;
+      const src = ctx.createBufferSource();
+      src.buffer = this.buf;
+      const bp = ctx.createBiquadFilter();
+      const g = ctx.createGain();
+      let freq = 500, q = 1.2, dur = 0.2, vol = 0.3;
+
+      if (kind === 'step') { freq = 460; dur = 0.18; vol = 0.3; }
+      else if (kind === 'door') { freq = 180; q = 0.7; dur = 0.5; vol = 0.32; }
+      else if (kind === 'paper') { freq = 2600; q = 2.4; dur = 0.14; vol = 0.2; }
+      else if (kind === 'glass') { freq = 3200; q = 3.2; dur = 0.3; vol = 0.22; }
+      else if (kind === 'heart') { freq = 90; q = 0.9; dur = 0.55; vol = 0.4; }
+      else if (kind === 'breath') { freq = 700; q = 0.8; dur = 0.7; vol = 0.16; }
+      else if (kind === 'pick') { freq = 1400; q = 1.8; dur = 0.16; vol = 0.24; }
+      else if (kind === 'bell') { freq = 1200; q = 8; dur = 1.6; vol = 0.2; }
+
+      bp.type = 'bandpass';
+      bp.frequency.value = freq;
+      bp.Q.value = q;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(vol, t + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      src.connect(bp);
+      bp.connect(g);
+      g.connect(this.master);
+      src.start(t);
+      src.stop(t + dur + 0.05);
+    },
+
+    async silence(ms) {
+      if (!this.ok) return new Promise((r) => setTimeout(r, ms));
+      const t = this.ctx.currentTime;
+      const g = this.master.gain;
+      g.cancelScheduledValues(t);
+      g.setValueAtTime(g.value, t);
+      g.linearRampToValueAtTime(0.0001, t + 0.25);
+      g.setValueAtTime(0.0001, t + ms / 1000);
+      g.linearRampToValueAtTime(0.9, t + ms / 1000 + 0.7);
+      return new Promise((r) => setTimeout(r, ms));
+    },
+
+    setMood(mood) {
+      if (!this.ok || !this.ambGain) return;
+      const target = mood === 'night' ? 0.035 : mood === 'dawn' ? 0.05 : 0.075;
+      const t = this.ctx.currentTime;
+      this.ambGain.gain.cancelScheduledValues(t);
+      this.ambGain.gain.linearRampToValueAtTime(target, t + 1.4);
+    }
+  };
+
+  V.init();
+  root.VOICE = V;
+  root.SFX = S;
+})(typeof self !== 'undefined' ? self : this);
+
+</script>
+<script>
+/* music.js */
+/* ============================================================
+   music.js · 背景音乐（现场合成）
+   一段极慢的五声音阶，一个持续低音，没有噪声。
+   ============================================================ */
+(function (root) {
+  'use strict';
+
+  const SCALE = [220.0, 261.63, 293.66, 349.23, 392.0, 440.0]; // A C D F G A
+  const BASS = 55.0;
+
+  const M = {
+    ctx: null,
+    master: null,
+    bassOsc: null,
+    timer: null,
+    step: 0,
+    on: false,
+
+    start() {
+      if (this.on) return;
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      try {
+        if (!this.ctx) this.ctx = new AC();
+        const p = this.ctx.resume();
+        if (p && p.catch) p.catch(() => {});
+      } catch (e) {
+        return;
+      }
+      const ctx = this.ctx;
+
+      const master = ctx.createGain();
+      master.gain.value = 0.0001;
+      master.connect(ctx.destination);
+      this.master = master;
+
+      // 一条很轻的低音，从头到尾不换
+      const bass = ctx.createOscillator();
+      bass.type = 'sine';
+      bass.frequency.value = BASS;
+      const bg = ctx.createGain();
+      bg.gain.value = 0.05;
+      const blp = ctx.createBiquadFilter();
+      blp.type = 'lowpass';
+      blp.frequency.value = 220;
+      bass.connect(bg);
+      bg.connect(blp);
+      blp.connect(master);
+      bass.start();
+      this.bassOsc = bass;
+
+      master.gain.linearRampToValueAtTime(0.09, ctx.currentTime + 5);
+
+      // 极慢的旋律：每隔两秒多一个音
+      const tick = () => {
+        if (!this.on) return;
+        this.pluck();
+        const gap = 2200 + Math.random() * 2600;
+        this.timer = setTimeout(tick, gap);
+      };
+      this.on = true;
+      this.timer = setTimeout(tick, 1200);
+    },
+
+    pluck() {
+      if (!this.ctx) return;
+      const ctx = this.ctx;
+      const t = ctx.currentTime;
+
+      // 旋律偶尔跳一下，偶尔重复上一个音
+      if (Math.random() < 0.28) {
+        // 停一拍
+      } else {
+        this.step = Math.max(
+          0,
+          Math.min(SCALE.length - 1, this.step + (Math.random() < 0.5 ? -1 : 1) * (Math.random() < 0.3 ? 2 : 1))
+        );
+      }
+
+      const freq = SCALE[this.step];
+      const osc = ctx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+
+      const harm = ctx.createOscillator();
+      harm.type = 'triangle';
+      harm.frequency.value = freq * 2;
+
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(0.055, t + 0.06);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 3.4);
+
+      const hg = ctx.createGain();
+      hg.gain.value = 0.28;
+      harm.connect(hg);
+
+      const lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.value = 1800;
+
+      osc.connect(g);
+      hg.connect(g);
+      g.connect(lp);
+      lp.connect(this.master);
+
+      osc.start(t);
+      harm.start(t);
+      osc.stop(t + 3.6);
+      harm.stop(t + 3.6);
+    },
+
+    duck(sec) {
+      if (!this.on || !this.ctx) return;
+      const t = this.ctx.currentTime;
+      const g = this.master.gain;
+      g.cancelScheduledValues(t);
+      g.setValueAtTime(g.value, t);
+      g.linearRampToValueAtTime(0.02, t + 0.6);
+      g.setValueAtTime(0.02, t + (sec || 3));
+      g.linearRampToValueAtTime(0.09, t + (sec || 3) + 1.6);
+    },
+
+    stop() {
+      this.on = false;
+      if (this.timer) clearTimeout(this.timer);
+      try {
+        if (this.bassOsc) this.bassOsc.stop();
+      } catch (e) {}
+      this.bassOsc = null;
+    }
+  };
+
+  root.MUSIC = M;
+})(typeof self !== 'undefined' ? self : this);
+
+</script>
+<script>
+/* film.js */
+/* ============================================================
+   film.js · 《妄》· 回到手工场景版
+   ------------------------------------------------------------
+   场景全部来自 world.js 的手工布局（大窗 / 雨 / 门 / 台灯 / 桌），
+   不再用程序化道具拼贴。
+   规矩：
+     1. 点下去的每一处，世界都要变。
+     2. 关键物件带线索，线索拼成真相。
+     3. 时钟只会向前，天黑就得回家。
+   ============================================================ */
+(function () {
+  'use strict';
+
+  const $ = (s) => document.querySelector(s);
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const hm = window.hm;
+  const SCENES = window.WORLD_SCENES;
+  if (window.SCENES2) Object.assign(SCENES, window.SCENES2);
+  const STORY = window.NPC_STORY || {};
+
+  /* 照片层：art/<场景>.jpg 存在就用，不存在就退回纯 CSS */
+  const PHOTO_OK = {};
+
+  function probePhotos() {
+    const names = ['room', 'hall', 'street', 'shop', 'home', 'clinic', 'police',
+      'funeral', 'oldhouse', 'oldinside', 'river', 'market'];
+    for (const n of names) {
+      const img = new Image();
+      img.onload = () => {
+        if (img.naturalWidth > 200) {
+          PHOTO_OK[n] = true;
+          const el = host.querySelector('.scene');
+          if (el && S.scene === n && el.className.indexOf('photo-' + n) < 0) {
+            el.className += ' photo-' + n;
+          }
+        }
+      };
+      img.src = 'art/' + n + '.jpg';
+    }
+  }
+
+  /* 物件 → 音效 */
+  function sfxFor(hs) {
+    const k = String((hs && hs.id) || '');
+    if (/window|glass|mirror/.test(k)) return 'glass';
+    if (/note|chart|form|paper|list|board|photo|seal/.test(k)) return 'paper';
+    if (/door|gate|out|back|leave|down|up|stairs|drawer|open/.test(k)) return 'door';
+    if (/phone|bell|radio|clock/.test(k)) return 'bell';
+    if (/bed|bench|chair|floor|walls/.test(k)) return 'step';
+    if (/water|puddle|river|rain/.test(k)) return 'breath';
+    return 'pick';
+  }
+
+  const QS = new URLSearchParams(location.search);
+  const SEED =
+    QS.get('seed') || (Date.now().toString(36) + Math.random().toString(36).slice(2, 5)).toUpperCase();
+
+  const LIFE = window.WorldSeed.gen(SEED);
+  const CITY = window.CITY;
+
+  /* 哪件东西藏着哪枚线索 */
+  const CLUE_OF = { note: 4, phone: 3, bag: 9, third: 2, board: 1, pills: 5, locked: 11 };
+
+  const S = {
+    life: LIFE,
+    hour: 5 * 60 + 40,
+    money: LIFE.who.base_money + 120,
+    stamina: 100,
+    food: 0,
+    rel: { mother: LIFE.mother.trust, aunt: 0, boss: 0 },
+    flags: {},
+    seen: {},
+    scene: 'room',
+    turns: 0,
+    clues: [],
+    bag: [],
+    talked: {},
+    finished: false
+  };
+
+  /* ---------------- 跨世 ---------------- */
+  const TKEY = 'wang.trace.v1';
+  const TRACE = (() => {
+    try {
+      return JSON.parse(localStorage.getItem(TKEY) || 'null');
+    } catch (e) {
+      return null;
+    }
+  })();
+
+  /* ---------------- DOM ---------------- */
+  const frame = $('#frame');
+  const host = $('#scenes');
+  const hsLayer = $('#hotspots');
+  const flash = $('#flash');
+  const panel = $('#panel');
+  const panelText = $('#panelText');
+  const topDay = $('#topDay');
+  const topPlace = $('#topPlace');
+  const topClue = $('#topClue');
+  const exitsEl = $('#exits');
+  const freeInput = $('#free');
+  const freeBar = $('#inputbar');
+  const endCard = $('#end');
+  const clueBtn = $('#topClue');
+  const cluePanel = $('#cluePanel');
+  const clueList = $('#clueList');
+
+  /* ---------------- 证据册 ---------------- */
+  function renderClues() {
+    if (!clueList) return;
+    const rows = [];
+    for (const id of S.clues) {
+      const sec = CITY && CITY.SECRETS ? CITY.SECRETS.find((x) => x.id === id) : null;
+      if (sec) {
+        rows.push(
+          '<div class="row">' + sec.text + '<small>—— ' + sec.owner + '</small></div>'
+        );
+      }
+    }
+    for (const it of S.bag) {
+      rows.push('<div class="row item">' + it + '<small>—— 你身上的东西</small></div>');
+    }
+    clueList.innerHTML = rows.length
+      ? rows.join('')
+      : '<div class="empty">你还什么都没查清楚。</div>';
+    if (clueBtn) clueBtn.textContent = '线索 ' + S.clues.length + '/12　物品 ' + S.bag.length;
+  }
+
+  /* ---------------- 文本 ---------------- */
+  let typing = false;
+  let skip = false;
+
+  function instant(text) {
+    panel.classList.add('on');
+    const p = document.createElement('p');
+    p.className = 'ln';
+    p.textContent = text;
+    panelText.appendChild(p);
+    while (panelText.children.length > 5) panelText.removeChild(panelText.firstChild);
+    panelText.scrollTop = panelText.scrollHeight;
+  }
+
+  async function narrate(text) {
+    panel.classList.add('on');
+    const p = document.createElement('p');
+    p.className = 'ln';
+    panelText.appendChild(p);
+    while (panelText.children.length > 5) panelText.removeChild(panelText.firstChild);
+    typing = true;
+    skip = false;
+    const lines = String(text).split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      if (i) p.appendChild(document.createElement('br'));
+      const L = lines[i];
+      for (let k = 0; k < L.length; k++) {
+        p.appendChild(document.createTextNode(L[k]));
+        panelText.scrollTop = panelText.scrollHeight;
+        if (skip) {
+          p.appendChild(document.createTextNode(L.slice(k + 1)));
+          break;
+        }
+        await sleep(L[k] === '。' || L[k] === '，' ? 100 : 24);
+      }
+    }
+    typing = false;
+  }
+
+  /* ---------------- HUD ---------------- */
+  const PHASE = (h) =>
+    h < 7 * 60
+      ? '凌晨'
+      : h < 9 * 60
+      ? '清晨'
+      : h < 12 * 60
+      ? '上午'
+      : h < 14 * 60
+      ? '中午'
+      : h < 17 * 60
+      ? '下午'
+      : h < 19 * 60
+      ? '黄昏'
+      : '夜里';
+
+  function renderHud() {
+    topDay.textContent = '第 1 天 · ' + PHASE(S.hour) + ' · ' + hm(S.hour);
+    topPlace.textContent = SCENES[S.scene].title;
+    topClue.textContent =
+      '线索 ' + S.clues.length + '/12　体力 ' + Math.max(0, Math.round(S.stamina));
+  }
+
+  /* ---------------- 场景之间的路 ---------------- */
+  const LINKS = {
+    room: ['hall'],
+    hall: ['room', 'street'],
+    street: ['hall', 'shop', 'market', 'police', 'clinic', 'funeral', 'oldhouse', 'river'],
+    shop: ['street'],
+    home: ['street'],
+    clinic: ['street'],
+    police: ['street'],
+    funeral: ['street'],
+    oldhouse: ['street', 'oldinside'],
+    oldinside: ['oldhouse'],
+    river: ['street'],
+    market: ['street']
+  };
+
+  /* 能坐下休息的地方 */
+  const REST_IDS = ['bed', 'bed2', 'bench', 'bench2', 'bench3', 'chair', 'seat', 'table', 'bed '];
+
+  /* 能拿起来带走的东西 */
+  const TAKE = {
+    note: '一张字条',
+    photo: '一张发黄的旧照片',
+    drawer: '一把缠着布的小刀',
+    box: '一个写着 402 的纸箱',
+    chart: '一页被撕掉一半的病历',
+    list: '一张殡仪馆的名单',
+    seal: '一段干透的封条',
+    slip: '一张银行凭条',
+    ticket: '一张过期车票',
+    prescription: '一张处方'
+  };
+
+  /* 谁在说话 */
+  const VOICE_OF = {
+    mother: 'mother', aunt: 'aunt', landlord: 'landlord', boss: 'boss',
+    nurse: 'nurse', officer: 'officer', attendant2: 'attendant2',
+    vendor: 'vendor', priest: 'priest', seller: 'seller',
+    attendant: 'attendant', guard: 'guard', owner: 'owner',
+    clerk: 'clerk', teller: 'teller', janitor: 'janitor', stranger: 'stranger'
+  };
+
+  /* ---------------- 三天，三个视角 ---------------- */
+  const DAYS = [
+    { who: '你', start: 'room', open: '第 1 天。\n你在出租屋醒来。' },
+    {
+      who: '母亲',
+      start: 'home',
+      open: '第 2 天。\n这一次，你是母亲。\n天还没亮，你在厨房里择菜。'
+    },
+    {
+      who: '值班民警',
+      start: 'police',
+      open: '第 3 天。\n这一次，你是值班民警。\n接警记录上多了一条，时间和十几年前那条一样。'
+    }
+  ];
+
+  /* 真实时间：3 秒 = 游戏 1 分钟（一天约 50 分钟真实） */
+  let clock = null;
+  function startClock() {
+    if (clock) return;
+    clock = setInterval(() => {
+      if (S.finished) return;
+      S.hour += 1;
+      renderHud();
+      if (S.hour >= 23 * 60 + 30) {
+        stopClock();
+        finish();
+      }
+    }, 3000);
+  }
+  function stopClock() {
+    if (clock) {
+      clearInterval(clock);
+      clock = null;
+    }
+  }
+
+  async function nextDay() {
+    endCard.classList.remove('on');
+    S.day += 1;
+    if (S.day > DAYS.length) return;
+    S.hour = 5 * 60 + 40;
+    S.stamina = 100;
+    S.finished = false;
+    S.flags = {};
+    S.seen = {};
+    const d = DAYS[S.day - 1];
+    S.scene = d.start;
+    renderScene();
+    startClock();
+    await sleep(600);
+    await narrate(d.open);
+    if ($('#topDay')) $('#topDay').textContent = '第 ' + S.day + ' 天 · ' + PHASE(S.hour) + ' · ' + hm(S.hour);
+  }
+
+  /* ---------------- 场景 ---------------- */
+  function hotspotList() {
+    const sc = SCENES[S.scene];
+    const list = sc.hotspots.slice();
+    if (S.scene === 'street' && S.hour >= 17 * 60) {
+      list.push({
+        id: 'gohome',
+        label: '回家',
+        rect: [60, 46, 18, 18],
+        run: () => ({ text: '你往家属院走。路灯一盏一盏在你身后灭。', cost: 25, go: 'home' })
+      });
+    }
+    return list;
+  }
+
+  function paintHotspots() {
+    if (!hsLayer) return;
+    hsLayer.innerHTML = '';
+    hsLayer.classList.toggle('tired', S.stamina <= 0);
+    for (const hs of hotspotList()) {
+      const b = document.createElement('button');
+      b.className = 'hs';
+      b.type = 'button';
+      b.style.left = hs.rect[0] + '%';
+      b.style.top = hs.rect[1] + '%';
+      b.style.width = hs.rect[2] + '%';
+      b.style.height = hs.rect[3] + '%';
+      const sp = document.createElement('span');
+      sp.textContent = hs.label;
+      b.appendChild(sp);
+      b.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        act(hs);
+      });
+      hsLayer.appendChild(b);
+    }
+  }
+
+  function renderScene() {
+    const sc = SCENES[S.scene];
+    const photo = PHOTO_OK[S.scene] ? ' photo-' + S.scene : '';
+    host.innerHTML =
+      '<div class="scene live ' + sc.cls + photo + '">' + sc.layer() +
+      '<div class="dust-layer"></div></div>';
+    host.classList.add('on');
+    paintHotspots();
+    renderExits();
+    renderHud();
+  }
+
+  /* 右上角：能去哪儿 */
+  function renderExits() {
+    if (!exitsEl) return;
+    exitsEl.innerHTML = '';
+    const list = LINKS[S.scene] || [];
+    for (const id of list) {
+      if (!SCENES[id]) continue;
+      const b = document.createElement('button');
+      b.className = 'exit';
+      b.type = 'button';
+      b.textContent = SCENES[id].title.replace(/^.*?·\s*/, '');
+      b.addEventListener('click', (e) => {
+        e.preventDefault();
+        goScene(id);
+      });
+      exitsEl.appendChild(b);
+    }
+    if (S.scene === 'street' && S.hour >= 17 * 60) {
+      const b = document.createElement('button');
+      b.className = 'exit';
+      b.type = 'button';
+      b.textContent = '家';
+      b.addEventListener('click', (e) => {
+        e.preventDefault();
+        goScene('home');
+      });
+      exitsEl.appendChild(b);
+    }
+  }
+
+  async function goScene(id) {
+    if (busy || S.finished) return;
+    if (S.stamina <= 0) {
+      await narrate('你连走路的力气都没有了。\n先找个地方坐下来。');
+      return;
+    }
+    busy = true;
+    S.stamina = Math.max(0, S.stamina - 2);
+    S.hour += 8;
+    window.SFX.hit('step');
+    flash.classList.add('on');
+    await sleep(420);
+    S.scene = id;
+    renderScene();
+    flash.classList.remove('on');
+    await sleep(360);
+    await narrate('你到了' + SCENES[id].title + '。');
+    renderHud();
+    busy = false;
+  }
+
+  /* ---------------- 行动 ---------------- */
+  let busy = false;
+
+  async function act(hs) {
+    if (busy || S.finished) return;
+
+    const rest = REST_IDS.indexOf(hs.id) >= 0;
+    if (S.stamina <= 0 && !rest) {
+      await narrate('你抬不起手。\n得先找个地方坐下——床、椅子、长椅都行。');
+      return;
+    }
+
+    busy = true;
+    if (hsLayer) hsLayer.classList.add('dim');
+    S.turns++;
+
+    let res = null;
+    try {
+      res = hs.run(S);
+    } catch (e) {
+      res = { text: '……', cost: 4 };
+    }
+    if (!res) {
+      busy = false;
+      host.classList.remove('dim');
+      return;
+    }
+
+    if (res.go === '__end__') {
+      busy = false;
+      return finish();
+    }
+
+    // 体力与音效：每一次触碰都有代价，也都有声音
+    window.SFX.hit(sfxFor(hs));
+    if (rest) {
+      S.stamina = Math.min(100, S.stamina + 55);
+      S.hour += 40;
+    } else {
+      S.stamina = Math.max(0, S.stamina - 2);
+    }
+
+    if (res.text) await narrate(res.text);
+
+    if (rest) await narrate('你坐下来，缓了很久。\n力气回来一些。');
+
+    // 人物声线：谁说这句话，就用谁的嗓子
+    const nid = res.voice || VOICE_OF[hs.id];
+    if (nid && CITY && CITY.NPCS) {
+      const n = CITY.NPCS.find((x) => x.id === nid);
+      if (n) {
+        const mm = String(res.text).match(/「([^」]{1,40})」/);
+        const spoken = mm ? mm[1] : String(res.text).split('\n')[0];
+        window.VOICE.say(spoken, n.voice);
+      }
+    }
+
+    // 人物的过去 / 现在 / 未来
+    if (STORY[hs.id]) {
+      const c = (S.talked[hs.id] || 0) + 1;
+      S.talked[hs.id] = c;
+      const st = STORY[hs.id];
+      const layer = c === 1 ? st.past : c === 2 ? st.now : st.future;
+      await sleep(200);
+      await narrate('（' + (hs.label || '他') + '）\n' + layer);
+    }
+
+    // 体力见底：不替你跳时间，只是不能再动
+    if (S.stamina <= 0) {
+      if (window.MUSIC) window.MUSIC.duck(3);
+      await narrate('你眼前发黑。\n再动一下就站不住了——找个地方坐下。');
+      if (hsLayer) hsLayer.classList.add('tired');
+    }
+
+    if (res.effects) {
+      try {
+        res.effects(S);
+      } catch (e) {}
+    }
+
+    // 线索
+    const cid = CLUE_OF[hs.id];
+    if (cid && S.clues.indexOf(cid) < 0) {
+      S.clues.push(cid);
+      const sec = CITY.SECRETS.find((x) => x.id === cid);
+      window.SFX.hit('heart');
+      await sleep(260);
+      await narrate('【线索 ' + S.clues.length + '/12】' + sec.text + '\n—— ' + sec.owner);
+      if (window.MUSIC) window.MUSIC.duck(2);
+    }
+
+    // 能拿走的东西
+    if (TAKE[hs.id] && S.bag.indexOf(TAKE[hs.id]) < 0) {
+      S.bag.push(TAKE[hs.id]);
+      await narrate('你把它收进了口袋。\n（' + TAKE[hs.id] + '）');
+    }
+    renderClues();
+
+    if (res.cost) S.hour += Math.max(1, Math.round(res.cost * 0.3));
+
+    if (res.go) {
+      flash.classList.add('on');
+      await sleep(460);
+      S.scene = res.go;
+      renderScene();
+      flash.classList.remove('on');
+      await sleep(400);
+      await narrate('你走进' + SCENES[res.go].title + '。');
+    } else {
+      renderHotspotsRefresh();
+    }
+
+    renderHud();
+
+    if (!S.finished && S.hour >= 22 * 60 && !S.flags.warned) {
+      S.flags.warned = true;
+      await narrate('快十一点了。这一天快过完了。');
+    }
+    if (!S.finished && S.hour >= 23 * 60 + 30) {
+      busy = false;
+      return finish();
+    }
+
+    host.classList.remove('dim');
+    busy = false;
+  }
+
+  function renderHotspotsRefresh() {
+    paintHotspots();
+  }
+
+  /* ---------------- 自由输入 ---------------- */
+  async function freeAct(raw) {
+    if (busy || S.finished) return;
+    const t = String(raw || '').trim();
+    if (!t) return;
+    freeInput.value = '';
+    busy = true;
+    host.classList.add('dim');
+    S.turns++;
+    instant('> ' + t);
+
+    const sc = SCENES[S.scene];
+    const has = (...ws) => ws.some((w) => t.indexOf(w) >= 0);
+
+    // 原地休息：不用找床，站着也能歇
+    if (has('休息', '歇', '坐一会', '坐一下', '喘口气', '缓缓')) {
+      await narrate('你靠着墙，慢慢滑下去。\n雨声在很远的地方。');
+      await sleep(3600);
+      S.stamina = Math.min(100, S.stamina + 35);
+      S.hour += 10;
+      if (window.SFX) window.SFX.hit('breath');
+      await narrate('……力气回来一些。');
+      renderHud();
+      renderClues();
+      busy = false;
+      if (hsLayer) hsLayer.classList.remove('dim');
+      return;
+    }
+
+    if (S.scene === 'home') {
+      await talkMother(t, has);
+      busy = false;
+      host.classList.remove('dim');
+      renderHud();
+      return;
+    }
+
+    let target = null;
+    if (has('窗', '外面', '雨')) target = 'window';
+    else if (has('字条', '纸', '桌')) target = 'note';
+    else if (has('手机', '电话')) target = 'phone';
+    else if (has('灯')) target = 'lamp';
+    else if (has('包', '钱')) target = 'bag';
+    else if (has('睡', '躺', '床')) target = 'bed';
+    else if (has('门', '出去', '走', '离开')) target = sc.hotspots.find((h) => h.id === 'door') ? 'door' : 'down';
+    else if (has('妈', '母亲', '她')) target = 'aunt';
+    else if (has('上班', '打工', '工作')) target = 'work';
+    else if (has('买', '吃')) target = 'buy';
+    else if (has('公告', '招工')) target = 'board';
+    else if (has('等', '车')) target = 'busstop';
+
+    const hit = sc.hotspots.find((h) => h.id === target);
+    if (hit) {
+      busy = false;
+      return act(hit);
+    }
+
+    const fb = [
+      '你站在原地，把这句话在心里过了一遍。没有人接。',
+      '你说了。雨声盖住了后半句。',
+      '你张了张嘴。最后什么也没做。',
+      '这句话在这个地方没有回音。'
+    ];
+    await narrate(fb[S.turns % fb.length]);
+    window.SFX.hit('breath');
+    S.hour += 6;
+    renderHud();
+    host.classList.remove('dim');
+    busy = false;
+  }
+
+  async function talkMother(t, has) {
+    S.talked.mother = (S.talked.mother || 0) + 1;
+    S.flags.talkedMother = true;
+
+    if (has('医院', '病', '检查')) {
+      S.flags.askedHospital = true;
+      S.rel.mother -= 4;
+      await window.SFX.silence(1200);
+      await narrate('你问她医院的事。\n她手上的动作停了一下，又继续。\n「没什么事。你别听别人乱讲。」\n—— 她没说「谁」。');
+      window.VOICE.say('没什么事。你别听别人乱讲。', CITY.NPCS[0].voice);
+    } else if (has('药', '停')) {
+      S.flags.askedPills = true;
+      S.rel.mother -= 2;
+      await narrate('你问她药还有没有。\n「有。够吃。」\n她说这句话的时候，看的是柜子那边。');
+      window.VOICE.say('有。够吃。', CITY.NPCS[0].voice);
+    } else if (has('对不起', '抱歉')) {
+      S.rel.mother += 8;
+      S.flags.apologized = true;
+      await window.SFX.silence(900);
+      await narrate('你说对不起。\n她把菜放下，看了你很久。\n「说什么呢。」\n—— 你注意到她的手在抖。');
+      window.VOICE.say('说什么呢。', CITY.NPCS[0].voice);
+    } else if (has('走', '离开', '外地')) {
+      S.flags.mentionedLeaving = true;
+      S.rel.mother -= 3;
+      await narrate('你说你想走。\n她没有抬头。\n「哦。」\n就一个字。');
+      window.VOICE.say('哦。', CITY.NPCS[0].voice);
+    } else if (has('爸', '父亲')) {
+      S.flags.askedFather = true;
+      await narrate('你提起父亲。\n她把灯调暗了一点。\n「吃饭吧。」');
+      window.VOICE.say('吃饭吧。', CITY.NPCS[0].voice);
+    } else {
+      await narrate('她听完，点点头。\n「' + LIFE.mother.obsession + '。」\n她说得很轻，像是说给自己听。');
+      window.VOICE.say(LIFE.mother.obsession, CITY.NPCS[0].voice);
+      S.rel.mother += 1;
+    }
+    S.hour += 12;
+    renderHud();
+  }
+
+  /* ---------------- 结局 ---------------- */
+  function verdict() {
+    const f = S.flags;
+    const n = S.clues.length;
+    if (f.askedHospital) return '你问了。她说了「没什么事」。你信了。';
+    if (f.knowStopMeds && !f.askedPills) return '你看见了那些药。你什么都没问。';
+    if (f.apologized) return '你说了对不起。这句话她等了很久，但你没说为什么。';
+    if (f.mentionedLeaving) return '你说你想走。她只回了一个字。';
+    if (n >= 6) return '你手里有一些东西。它们还不能叫真相，只能叫怀疑。';
+    if (f.worked) return '你上了一天班。这一天你没有见到她。';
+    if (S.turns <= 4) return '这一天你几乎什么都没做。它也就这么过去了。';
+    return '这一天过完了。你没有做错什么，也没有做成什么。';
+  }
+
+  async function finish() {
+    if (S.finished) return;
+    S.finished = true;
+    stopClock();
+    exitsEl.innerHTML = '';
+    freeBar.classList.remove('on');
+    panel.classList.remove('on');
+    window.VOICE.stop();
+    await window.SFX.silence(1500);
+
+    const summary = [];
+    if (S.flags.metAunt) summary.push('邻居说了，你妈在楼梯口坐过半个钟头。');
+    if (S.flags.knowStopMeds) summary.push('柜子上的药，剩的量不对。');
+    if (S.flags.worked) summary.push('你挣了八十五块。');
+    if (S.flags.talkedMother) summary.push('你和母亲说了话。');
+    else summary.push('你没和母亲说话。');
+
+    $('#endTitle').textContent = '第 ' + S.day + ' 天结束';
+    $('#endSub').textContent = '线索 ' + S.clues.length + '/12 · 物品 ' + S.bag.length + '\n' + summary.join('\n');
+    $('#epitaph').textContent = verdict();
+    $('#trace').textContent = TRACE ? '三号院还记得：' + TRACE.identity : '这一次，你叫' + LIFE.who.name;
+
+    const again = $('#again');
+    if (again) {
+      if (S.day < DAYS.length) {
+        again.textContent = '继续 · 第 ' + (S.day + 1) + ' 天（' + DAYS[S.day].who + '的视角）';
+        again.onclick = (e) => {
+          e.preventDefault();
+          nextDay();
+        };
+      } else {
+        again.textContent = '从头再来';
+        again.onclick = () => location.reload();
+      }
+    }
+
+    try {
+      localStorage.setItem(TKEY, JSON.stringify({ identity: LIFE.who.name, clues: S.clues.length, seed: SEED, at: Date.now() }));
+    } catch (e) {}
+
+    await sleep(600);
+    endCard.classList.add('on');
+  }
+
+  /* ---------------- 起始地：每个人醒来在不同的地方 ---------------- */
+  const STARTS = {
+    room: {
+      text: '第 1 天，凌晨 4:47。\n你在出租屋醒来。\n窗外的雨下了七天。\n你不记得自己是怎么回来的。',
+      clue: 4
+    },
+    clinic: {
+      text: '第 1 天，凌晨 5:12。\n你在诊所的长椅上醒来。\n身上没有伤，但手上有消毒水的味道。\n你不记得自己为什么在这儿。',
+      clue: 5
+    },
+    police: {
+      text: '第 1 天，凌晨 4:03。\n你在派出所的值班椅上醒来。\n没有人问你为什么睡在这儿。\n桌上有半杯凉茶。',
+      clue: 7
+    },
+    oldhouse: {
+      text: '第 1 天，凌晨 3:38。\n你在西街 17 号的门口醒来。\n门上贴着封条，胶还是湿的。\n你不记得自己什么时候来过。',
+      clue: 2
+    }
+  };
+
+  /* ---------------- 开场动画：两场命案 ---------------- */
+  let introSkip = false;
+  let introPlayed = false;
+
+  async function playIntro() {
+    if (introPlayed) return;
+    introPlayed = true;
+    const el = $('#intro');
+    const stage = $('#introStage');
+    const txt = $('#introText');
+    if (!el) return;
+
+    // 开场就有音乐，别让这段干着
+    if (window.SFX) window.SFX.start();
+    if (window.MUSIC) window.MUSIC.start();
+
+    el.style.display = '';
+    el.classList.add('on');
+    await sleep(700);
+
+    const steps = [
+      { scene: null, dim: true, lines: ['十几年前。', '西街 17 号。'], dur: 3400 },
+      { scene: 'oldhouse', lines: ['一个男人死在自己家里。', '四十七刀。'], dur: 4600 },
+      { scene: 'oldhouse', lines: ['案子没破。', '那间屋一直锁着。'], dur: 4200 },
+      { scene: 'room', lines: ['今天凌晨，三点四十。', '同样的手法。'], dur: 4400 },
+      { scene: 'room', lines: ['死者手里攥着一张纸条。', '上面写着：临江路 3 号 402。'], dur: 5000 },
+      { scene: null, lines: ['你住在那儿。'], dur: 3400 },
+      { scene: null, big: true, lines: ['妄'], dur: 3600 },
+      { scene: null, dim: true, lines: ['每个人都有妄念。', '每个人都有过错。'], dur: 3800 }
+    ];
+
+    for (const s of steps) {
+      if (introSkip) break;
+      if (s.scene && SCENES[s.scene]) {
+        stage.innerHTML =
+          '<div class="scene live ' + SCENES[s.scene].cls + '">' + SCENES[s.scene].layer() +
+          '<div class="dust-layer"></div></div>';
+        stage.classList.add('on');
+      } else {
+        stage.classList.remove('on');
+      }
+      txt.className = 'intro__text' + (s.big ? ' big' : '') + (s.dim ? ' dim' : '');
+      // 一次只放一句，绝不叠
+      const per = Math.max(1400, Math.round(s.dur / Math.max(1, s.lines.length)));
+      for (const line of s.lines) {
+        if (introSkip) break;
+        txt.innerHTML = '<span class="l">' + line + '</span>';
+        await sleep(per);
+      }
+      if (introSkip) break;
+      txt.innerHTML = '';
+      stage.classList.remove('on');
+      await sleep(320);
+    }
+
+    introSkip = true;
+    el.classList.remove('on');
+    await sleep(900);
+    el.style.display = 'none';
+    stage.innerHTML = '';
+    const st = $('#start');
+    if (st) {
+      st.classList.remove('off');
+      st.style.display = '';
+    }
+  }
+
+  /* ---------------- 端到端自测：真的去点 ---------------- */
+  async function runE2E() {
+    const log = [];
+    const t0 = Date.now();
+    const rec = (s) => log.push(String(Date.now() - t0).padStart(6) + 'ms  ' + s);
+
+    const snap = () =>
+      '场景=' + S.scene +
+      ' 线索=' + S.clues.length +
+      ' 背包=' + S.bag.length +
+      ' 体力=' + Math.round(S.stamina) +
+      ' 时刻=' + hm(S.hour);
+
+    const clickLabel = async (label, wait) => {
+      const hs = Array.from(document.querySelectorAll('#hotspots .hs'));
+      const el = hs.find((h) => h.textContent.trim() === label);
+      if (!el) {
+        rec('✗ 找不到热区「' + label + '」（当前 ' + hs.length + ' 个：' +
+          hs.map((h) => h.textContent).join('/') + '）');
+        return false;
+      }
+      const before = snap();
+      el.click();
+      await sleep(wait || 2600);
+      const after = snap();
+      rec((before === after ? '· 点了「' + label + '」没变化' : '✓ 点了「' + label + '」') + ' → ' + after);
+      return true;
+    };
+
+    const clickExit = async (label) => {
+      const list = Array.from(document.querySelectorAll('#exits .exit'));
+      const el = list.find((b) => b.textContent.indexOf(label) >= 0);
+      if (!el) {
+        rec('✗ 没有出口「' + label + '」（现有：' + list.map((b) => b.textContent).join('/') + '）');
+        return false;
+      }
+      el.click();
+      await sleep(2400);
+      rec('✓ 走「' + label + '」 → ' + snap());
+      return true;
+    };
+
+    try {
+      if ($('#begin')) {
+        $('#begin').click();
+        await sleep(3200);
+        // 固定从出租屋开始，测试用例才有意义
+        S.scene = 'room';
+        renderScene();
+        await sleep(1000);
+        rec('开始 → ' + snap() + '（热区：' +
+          Array.from(document.querySelectorAll('#hotspots .hs')).map((h) => h.textContent).join('/') + '）');
+      }
+
+      await clickLabel('窗');
+      await clickLabel('桌上的字条');
+      await clickLabel('背包');
+      await clickLabel('手机');
+      await clickLabel('门');
+      await clickLabel('隔壁的门', 3400);
+      await clickLabel('下楼');
+      await clickExit('二层走廊');
+      await clickLabel('病历本');
+      await clickLabel('护士站', 3800);
+
+      // 证据册
+      if (clueBtn) {
+        clueBtn.click();
+        await sleep(500);
+        const rows = document.querySelectorAll('#clueList .row').length;
+        rec('✓ 打开证据册，里面 ' + rows + ' 条');
+        clueBtn.click();
+      }
+
+      // 原地休息
+      freeInput.value = '休息';
+      await freeAct('休息');
+      await sleep(1200);
+      rec('✓ 原地休息 → ' + snap());
+
+      rec('=== 通过：' + log.filter((l) => l.indexOf('✓') >= 0).length +
+        ' 项，失败：' + log.filter((l) => l.indexOf('✗') >= 0).length + ' 项 ===');
+
+      // 音频状态
+      const ac = window.SFX && window.SFX.ctx;
+      rec('音频：AudioContext=' + (ac ? ac.state : '无') +
+        ' 音乐=' + (window.MUSIC && window.MUSIC.on ? '开' : '关') +
+        ' 声线=' + ('speechSynthesis' in window ? (speechSynthesis.getVoices().length + ' 个语音') : '不支持'));
+    } catch (e) {
+      rec('!!! 抛错：' + e.message + '\n' + (e.stack || '').split('\n')[1]);
+    }
+
+    const d = document.createElement('pre');
+    d.style.cssText =
+      'position:fixed;z-index:9999;left:0;top:0;width:100%;height:100%;' +
+      'background:#000;color:#0f0;font:13px/1.7 monospace;padding:14px 18px;' +
+      'white-space:pre-wrap;overflow:auto;margin:0';
+    d.textContent = log.join('\n');
+    document.body.appendChild(d);
+  }
+
+  /* ---------------- 启动 ---------------- */
+  function boot() {
+    $('#seedtxt').textContent = SEED;
+    $('#lifeName').textContent = LIFE.who.name;
+    $('#lifeLine').textContent = LIFE.who.origin + ' · ' + LIFE.who.job + ' · ' + LIFE.who.family;
+    $('#wound').textContent = LIFE.who.wound;
+    if ($('#stat')) $('#stat').textContent = '十一个场景 · 七十处可碰之物 · 十二枚别人嘴里的真相';
+
+    if (!QS.get('debug')) {
+      const keys = Object.keys(STARTS);
+      S.scene = keys[window.WorldSeed.fnv(SEED) % keys.length];
+    }
+
+    if (TRACE) $('#startHint').textContent = '三号院里还留着上一个人的痕迹';
+
+    $('#begin').addEventListener('click', run);
+    // 「再来一次」的绑定交给 finish()，这里不预先绑死
+
+    if (clueBtn && cluePanel) {
+      clueBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        cluePanel.classList.toggle('on');
+      });
+    }
+    renderClues();
+
+    freeBar.classList.add('on');
+    freeInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        freeAct(freeInput.value);
+      }
+    });
+    panel.addEventListener('click', () => {
+      if (typing) skip = true;
+    });
+
+    const setU = () => {
+      const w = Math.max(frame.clientWidth || 800, 640);
+      frame.style.setProperty('--u', (w / 100).toFixed(3) + 'px');
+    };
+    setU();
+    if (window.ResizeObserver) new ResizeObserver(setU).observe(frame);
+
+    const dbg = QS.get('debug');
+    if (dbg && SCENES[dbg]) {
+      $('#start').style.display = 'none';
+      freeBar.classList.add('on');
+      S.scene = dbg;
+      renderScene();
+    }
+
+    if (QS.has('auto')) setTimeout(run, 200);
+    if (QS.get('probe') === '3') {
+      setTimeout(() => {
+        const d = document.createElement('pre');
+        d.style.cssText =
+          'position:absolute;z-index:99;left:2%;top:6%;color:#0f0;font:14px monospace;background:#000;padding:10px;white-space:pre-wrap';
+        let info = 'hotspots=' + document.querySelectorAll('#hotspots .hs').length + '\n';
+        const hs = document.querySelectorAll('#hotspots .hs');
+        for (let i = 0; i < hs.length && i < 5; i++) {
+          const el = hs[i];
+          const r = el.getBoundingClientRect();
+          const cx = Math.round(r.left + r.width / 2);
+          const cy = Math.round(r.top + r.height / 2);
+          const top = document.elementFromPoint(cx, cy);
+          info +=
+            el.textContent +
+            ' @' + cx + ',' + cy +
+            ' -> ' + (top ? top.className || top.tagName : 'null') + '\n';
+        }
+        d.textContent = info;
+        frame.appendChild(d);
+      }, 1600);
+    }
+    if (QS.has('skipintro') || QS.has('debug') || QS.has('auto') || QS.has('e2e')) {
+      const g = $('#gate');
+      if (g) {
+        g.style.display = 'none';
+        g.classList.add('off');
+      }
+      $('#start').style.display = QS.has('skipintro') && !QS.has('debug') ? '' : 'none';
+      const iv0 = $('#intro');
+      if (iv0) {
+        iv0.classList.remove('on');
+        iv0.style.display = 'none';
+      }
+    } else {
+      // 等一次真实的点击：浏览器只允许在手势之后出声
+      const gate = $('#gate');
+      const gateBtn = $('#gateBtn');
+      if (gateBtn) {
+        gateBtn.addEventListener('click', () => {
+          gate.classList.add('off');
+          setTimeout(() => {
+            gate.style.display = 'none';
+          }, 900);
+          window.SFX.start();
+          if (window.MUSIC) window.MUSIC.start();
+          setTimeout(playIntro, 500);
+        });
+      }
+    }
+
+    if (QS.has('e2e')) setTimeout(runE2E, 600);
+
+    const sk = $('#introSkip');
+    if (sk) sk.addEventListener('click', () => { introSkip = true; });
+
+    probePhotos();
+  }
+
+  async function run() {
+    // 保险：进场前把开场动画彻底关掉，别让它挡住热区
+    const iv = $('#intro');
+    if (iv) {
+      iv.classList.remove('on');
+      iv.style.display = 'none';
+    }
+
+    $('#start').classList.add('off');
+    window.SFX.start();
+    if (window.MUSIC) window.MUSIC.start();
+    freeBar.classList.add('on');
+    await sleep(400);
+    flash.classList.add('on');
+    await sleep(1200);
+    renderScene();
+    flash.classList.remove('on');
+    await sleep(700);
+
+    const st = STARTS[S.scene] || STARTS.room;
+    await narrate(st.text);
+
+    startClock();
+    if ($('#topDay')) $('#topDay').textContent = '第 ' + S.day + ' 天 · ' + PHASE(S.hour) + ' · ' + hm(S.hour);
+
+    if (st.clue && S.clues.indexOf(st.clue) < 0) {
+      S.clues.push(st.clue);
+      const sec = CITY.SECRETS.find((x) => x.id === st.clue);
+      window.SFX.hit('heart');
+      await sleep(240);
+      await narrate('【线索 ' + S.clues.length + '/12】' + sec.text + '\n—— ' + sec.owner);
+    }
+
+    await narrate('这里的一切都能碰。鼠标移过去会显形。\n右上角写着你还剩多少体力。');
+
+    if (QS.has('auto')) autoRun();
+  }
+
+  async function autoRun() {
+    let guard = 0;
+    while (!S.finished && guard++ < 40) {
+      const sc = SCENES[S.scene];
+      const hs = sc.hotspots[guard % sc.hotspots.length];
+      if (!hs) break;
+      await act(hs);
+      await sleep(60);
+    }
+    if (!S.finished) await finish();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();
+
+</script>
+</body>
+</html>
