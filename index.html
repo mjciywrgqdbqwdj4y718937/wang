@@ -6111,6 +6111,12 @@ html, body {
       iv.style.display = 'none';
     }
 
+    // 从这个人自己的屋子里开始
+    if (HERO) {
+      S.scene = HERO.home;
+      S.money = HERO.money;
+    }
+
     $('#start').classList.add('off');
     window.SFX.start();
     if (window.MUSIC) window.MUSIC.start();
