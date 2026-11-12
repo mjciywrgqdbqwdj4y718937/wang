@@ -5269,20 +5269,24 @@ html, body {
     clerk: 'clerk', teller: 'teller', janitor: 'janitor', stranger: 'stranger'
   };
 
-  /* ---------------- 三天，三个视角 ---------------- */
-  const DAYS = [
-    { who: '你', start: 'room', open: '第 1 天。\n你在出租屋醒来。' },
-    {
-      who: '母亲',
-      start: 'home',
-      open: '第 2 天。\n这一次，你是母亲。\n天还没亮，你在厨房里择菜。'
-    },
-    {
-      who: '值班民警',
-      start: 'police',
-      open: '第 3 天。\n这一次，你是值班民警。\n接警记录上多了一条，时间和十几年前那条一样。'
-    }
-  ];
+  /* ---------------- 三天：这一次就是这个人，不换视角 ---------------- */
+  function dayOpen(n) {
+    if (!HERO) return '第 ' + n + ' 天。';
+    if (n === 1) return HERO.open;
+    const home = SCENES[HERO.home] ? SCENES[HERO.home].title : '屋里';
+    if (n === 2)
+      return (
+        '第 2 天。\n你在' + home + '醒来。\n' +
+        '昨天的事像一块没擦干净的玻璃。\n' +
+        '有些东西你昨天看见了，没敢细想。'
+      );
+    return (
+      '第 3 天。\n还是这间屋。\n' +
+      '雨小了一点。\n' +
+      '今天必须有个结果——不管是谁的结果。'
+    );
+  }
+  const DAY_TOTAL = 3;
 
   /* 真实时间：3 秒 = 游戏 1 分钟（一天约 50 分钟真实） */
   let clock = null;
@@ -5308,18 +5312,17 @@ html, body {
   async function nextDay() {
     endCard.classList.remove('on');
     S.day += 1;
-    if (S.day > DAYS.length) return;
+    if (S.day > DAY_TOTAL) return;
     S.hour = 5 * 60 + 40;
     S.stamina = 100;
     S.finished = false;
     S.flags = {};
     S.seen = {};
-    const d = DAYS[S.day - 1];
-    S.scene = d.start;
+    S.scene = HERO ? HERO.home : S.scene;
     renderScene();
     startClock();
     await sleep(600);
-    await narrate(d.open);
+    await narrate(dayOpen(S.day));
     if ($('#topDay')) $('#topDay').textContent = '第 ' + S.day + ' 天 · ' + PHASE(S.hour) + ' · ' + hm(S.hour);
   }
 
@@ -5704,14 +5707,14 @@ html, body {
 
     const again = $('#again');
     if (again) {
-      if (S.day < DAYS.length) {
-        again.textContent = '继续 · 第 ' + (S.day + 1) + ' 天（' + DAYS[S.day].who + '的视角）';
+      if (S.day < DAY_TOTAL) {
+        again.textContent = '继续 · 第 ' + (S.day + 1) + ' 天';
         again.onclick = (e) => {
           e.preventDefault();
           nextDay();
         };
       } else {
-        again.textContent = '从头再来';
+        again.textContent = '换一个人生';
         again.onclick = () => location.reload();
       }
     }
@@ -5805,7 +5808,8 @@ html, body {
     el.style.display = 'none';
     stage.innerHTML = '';
     if (CHARS.length) {
-      showPick();
+      // 不让人选：直接在这个人身上醒过来
+      run();
     } else {
       const st0 = $('#start');
       if (st0) {
@@ -5968,7 +5972,17 @@ html, body {
 
   /* ---------------- 启动 ---------------- */
   function boot() {
-    $('#seedtxt').textContent = SEED;
+    // 随机在一个人身上醒过来（?char=chen 只用于测试）
+    if (CHARS.length) {
+      const want = QS.get('char');
+      let idx = CHARS.findIndex(function (c) { return c.id === want; });
+      if (idx < 0) idx = Math.floor(Math.random() * CHARS.length);
+      HERO = CHARS[idx];
+      S.scene = HERO.home;
+      S.money = HERO.money;
+    }
+
+    $('#seedtxt').textContent = HERO ? HERO.name : SEED;
     $('#lifeName').textContent = LIFE.who.name;
     $('#lifeLine').textContent = LIFE.who.origin + ' · ' + LIFE.who.job + ' · ' + LIFE.who.family;
     $('#wound').textContent = LIFE.who.wound;
@@ -6107,8 +6121,15 @@ html, body {
     flash.classList.remove('on');
     await sleep(700);
 
-    const st = (HERO && HERO.open) ? { text: HERO.open } : (STARTS[S.scene] || STARTS.room);
+    const st = (HERO && HERO.open)
+      ? { text: HERO.open }
+      : (STARTS[S.scene] || STARTS.room);
     await narrate(st.text);
+
+    if (HERO) {
+      // 不报名：先说住处，名字留给他自己想起来
+      await narrate('你在' + SCENES[HERO.home].title + '。\n口袋里有一张工牌，名字那一栏磨得看不清了。');
+    }
 
     startClock();
     if ($('#topDay')) $('#topDay').textContent = '第 ' + S.day + ' 天 · ' + PHASE(S.hour) + ' · ' + hm(S.hour);
