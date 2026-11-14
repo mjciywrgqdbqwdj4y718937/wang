@@ -6445,6 +6445,729 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
 
 </script>
 <script>
+/* zd2.js */
+/* ============================================================
+   zd2.js · 第二批场景的立体构造
+   三楼走廊 / 派出所 / 档案室 / 殡仪馆 / 302 门外
+   ============================================================ */
+(function (root) {
+  'use strict';
+
+  const D2 = {};
+  const C = {
+    wall: '#1a1713', floor: '#14110d',
+    wood: '#3b2f21', woodDark: '#241c13',
+    metal: '#33332e', metalDark: '#1e1e1b',
+    door: '#2e251b', doorDark: '#1a140e'
+  };
+
+  function mount(host, draw, zoom) {
+    if (!root.Zdog) return;
+    let el = host.querySelector('canvas');
+    if (!el) {
+      el = document.createElement('canvas');
+      el.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:block';
+      host.appendChild(el);
+    }
+    const w = host.clientWidth || 1200;
+    const h = host.clientHeight || 520;
+    el.width = w; el.height = h;
+    const illo = new Zdog.Illustration({ element: el, zoom: zoom || 1 });
+    draw(illo);
+    illo.updateRenderGraph();
+  }
+
+  /* ============================================================
+     三楼走廊
+     ============================================================ */
+  D2.hall = function (host) {
+    mount(host, function (illo) {
+      // 地板
+      new Zdog.Rect({
+        addTo: illo, width: 300, height: 420,
+        translate: { y: 100, z: 0 }, rotate: { x: Zdog.TAU / 4 },
+        fill: true, color: C.floor, stroke: 1
+      });
+      // 左墙
+      new Zdog.Rect({
+        addTo: illo, width: 260, height: 200,
+        translate: { x: -152, y: -4, z: 10 },
+        rotate: { y: Zdog.TAU / 4 },
+        fill: true, color: '#191612', stroke: 1
+      });
+      // 右墙
+      new Zdog.Rect({
+        addTo: illo, width: 260, height: 200,
+        translate: { x: 152, y: -4, z: 10 },
+        rotate: { y: -Zdog.TAU / 4 },
+        fill: true, color: '#181510', stroke: 1
+      });
+      // 尽头墙
+      new Zdog.Rect({
+        addTo: illo, width: 304, height: 200,
+        translate: { y: -4, z: -196 },
+        fill: true, color: '#171410', stroke: 1
+      });
+
+      // 左门（301）
+      new Zdog.Box({
+        addTo: illo, width: 8, height: 130, depth: 56,
+        translate: { x: -146, y: -6, z: -40 },
+        color: C.door, leftFace: C.doorDark, rightFace: C.doorDark,
+        topFace: '#3a3025', bottomFace: C.doorDark,
+        frontFace: '#332a1e', rearFace: C.doorDark, stroke: 1
+      });
+      // 右门（302），开一条缝
+      const d302 = new Zdog.Anchor({ addTo: illo, translate: { x: 146, y: -6, z: -40 } });
+      new Zdog.Box({
+        addTo: d302, width: 8, height: 130, depth: 56,
+        rotate: { y: 0.26 },
+        color: C.door, leftFace: C.doorDark, rightFace: C.doorDark,
+        topFace: '#3a3025', bottomFace: C.doorDark,
+        frontFace: '#332a1e', rearFace: C.doorDark, stroke: 1
+      });
+      // 门缝的光
+      new Zdog.Box({
+        addTo: illo, width: 2, height: 128, depth: 4,
+        translate: { x: 132, y: -6, z: -40 },
+        color: '#c9a870', stroke: 0
+      });
+
+      // 尽头的门
+      new Zdog.Box({
+        addTo: illo, width: 62, height: 118, depth: 6,
+        translate: { y: -12, z: -192 },
+        color: '#242018', leftFace: '#15110c', rightFace: '#15110c',
+        topFace: '#2e2820', bottomFace: '#15110c',
+        frontFace: '#2a241c', rearFace: '#15110c', stroke: 1
+      });
+
+      // 声控灯（天花板）
+      new Zdog.Cylinder({
+        addTo: illo, diameter: 22, length: 8,
+        translate: { y: -104, z: -20 },
+        rotate: { x: Zdog.TAU / 4 },
+        color: '#4a4436', frontFace: '#6a6252', backface: '#2a2620', stroke: 1
+      });
+
+      illo.rotate = { x: -0.06, y: 0 };
+      illo.translate = { y: 0 };
+    }, 1.1);
+  };
+
+  /* ============================================================
+     派出所 · 值班室
+     ============================================================ */
+  D2.police = function (host) {
+    mount(host, function (illo) {
+      new Zdog.Rect({
+        addTo: illo, width: 440, height: 258,
+        translate: { y: 100, z: -40 }, rotate: { x: Zdog.TAU / 4 },
+        fill: true, color: '#15161a', stroke: 1
+      });
+      new Zdog.Rect({
+        addTo: illo, width: 440, height: 218,
+        translate: { y: -4, z: -128 }, fill: true, color: '#1b1d22', stroke: 1
+      });
+
+      // 值班台
+      const desk = new Zdog.Anchor({ addTo: illo, translate: { x: -30, y: 66, z: 20 } });
+      new Zdog.Box({
+        addTo: desk, width: 190, height: 60, depth: 66,
+        color: '#2e3236', leftFace: '#1a1e22', rightFace: '#1a1e22',
+        topFace: '#3a4046', bottomFace: '#1a1e22',
+        frontFace: '#2e3236', rearFace: '#1a1e22', stroke: 1
+      });
+      // 台灯
+      new Zdog.Cylinder({
+        addTo: desk, diameter: 10, length: 30,
+        translate: { x: -62, y: -46, z: -6 },
+        color: '#33332e', frontFace: '#4a4a42', backface: '#1e1e1b', stroke: 1
+      });
+      new Zdog.Cone({
+        addTo: desk, diameter: 30, length: 18,
+        translate: { x: -62, y: -66, z: -6 },
+        rotate: { x: 0.4 },
+        color: '#6a5a3e', backface: '#3a3020', stroke: 1
+      });
+      // 登记簿
+      new Zdog.Box({
+        addTo: desk, width: 44, height: 4, depth: 32,
+        translate: { x: 20, y: -32, z: 6 }, rotate: { y: 0.1 },
+        color: '#8a8272', leftFace: '#5a5444', rightFace: '#5a5444',
+        topFace: '#9a9280', bottomFace: '#5a5444',
+        frontFace: '#8a8272', rearFace: '#5a5444', stroke: 1
+      });
+
+      // 案件板（后墙）
+      const board = new Zdog.Anchor({ addTo: illo, translate: { x: 40, y: -30, z: -124 } });
+      new Zdog.Box({
+        addTo: board, width: 150, height: 96, depth: 5,
+        color: '#3a3428', leftFace: '#241f18', rightFace: '#241f18',
+        topFace: '#463f30', bottomFace: '#241f18',
+        frontFace: '#423a2c', rearFace: '#241f18', stroke: 1
+      });
+      // 板上的照片
+      [[-52, -26], [-18, -30], [16, -24], [50, -28],
+       [-46, 12], [-10, 16], [26, 10], [54, 14]].forEach(function (p) {
+        new Zdog.Box({
+          addTo: board, width: 22, height: 18, depth: 1,
+          translate: { x: p[0], y: p[1], z: 3 },
+          rotate: { z: (Math.random() - 0.5) * 0.12 },
+          color: '#9a9280', stroke: 0
+        });
+      });
+
+      // 铁皮柜（右）
+      new Zdog.Box({
+        addTo: illo, width: 78, height: 132, depth: 40,
+        translate: { x: 158, y: 16, z: -60 },
+        color: '#2a2e30', leftFace: '#1a1e20', rightFace: '#1a1e20',
+        topFace: '#363a3c', bottomFace: '#1a1e20',
+        frontFace: '#2e3234', rearFace: '#1a1e20', stroke: 1
+      });
+
+      // 椅子
+      new Zdog.Anchor({ addTo: illo, translate: { x: -30, y: 76, z: 76 } }).addChild(
+        new Zdog.Box({
+          width: 40, height: 6, depth: 40,
+          color: '#26262a', stroke: 1
+        })
+      );
+
+      illo.rotate = { x: -0.1, y: 0.12 };
+      illo.translate = { y: -2 };
+    }, 1.15);
+  };
+
+  /* ============================================================
+     档案室
+     ============================================================ */
+  D2.archive = function (host) {
+    mount(host, function (illo) {
+      new Zdog.Rect({
+        addTo: illo, width: 440, height: 254,
+        translate: { y: 100, z: -40 }, rotate: { x: Zdog.TAU / 4 },
+        fill: true, color: '#131416', stroke: 1
+      });
+      new Zdog.Rect({
+        addTo: illo, width: 440, height: 214,
+        translate: { y: -4, z: -128 }, fill: true, color: '#1a1c1e', stroke: 1
+      });
+
+      // 一排铁皮档案柜
+      [[-150, 0], [-66, 0], [18, 0]].forEach(function (p) {
+        const cab = new Zdog.Anchor({ addTo: illo, translate: { x: p[0], y: 24, z: -96 } });
+        new Zdog.Box({
+          addTo: cab, width: 76, height: 132, depth: 42,
+          color: '#2a2e30', leftFace: '#191c1e', rightFace: '#191c1e',
+          topFace: '#34383a', bottomFace: '#191c1e',
+          frontFace: '#2e3234', rearFace: '#191c1e', stroke: 1
+        });
+        // 四个抽屉缝
+        [-48, -16, 16, 48].forEach(function (y) {
+          new Zdog.Box({
+            addTo: cab, width: 70, height: 2, depth: 2,
+            translate: { y: y, z: 21 }, color: '#454a4c', stroke: 0
+          });
+          // 拉手
+          new Zdog.Box({
+            addTo: cab, width: 16, height: 4, depth: 2,
+            translate: { y: y + 8, z: 22 }, color: '#565c5e', stroke: 0
+          });
+        });
+      });
+
+      // 一个拉开的抽屉
+      new Zdog.Box({
+        addTo: illo, width: 70, height: 24, depth: 38,
+        translate: { x: 18, y: 4, z: -64 },
+        color: '#33383a', leftFace: '#1e2224', rightFace: '#1e2224',
+        topFace: '#3f4446', bottomFace: '#1e2224',
+        frontFace: '#363b3d', rearFace: '#1e2224', stroke: 1
+      });
+      // 抽屉里的卷宗
+      [[-24, -2], [-6, 0], [12, -2], [28, 1]].forEach(function (p, i) {
+        new Zdog.Box({
+          addTo: illo, width: 16, height: 4, depth: 26,
+          translate: { x: 18 + p[0], y: p[1] - 12, z: -64 },
+          rotate: { y: p[2] * 0.05 },
+          color: '#7a6a52', leftFace: '#4a3f30', rightFace: '#4a3f30',
+          topFace: '#8a7a5c', bottomFace: '#4a3f30',
+          frontFace: '#6a5a46', rearFace: '#4a3f30', stroke: 1
+        });
+      });
+
+      // 拉绳灯
+      new Zdog.Cylinder({
+        addTo: illo, diameter: 1.6, length: 76,
+        translate: { y: -74, z: -20 },
+        color: '#2a2e30', frontFace: '#2a2e30', backface: '#2a2e30', stroke: 0
+      });
+      new Zdog.Cylinder({
+        addTo: illo, diameter: 14, length: 10,
+        translate: { y: -32, z: -20 },
+        rotate: { x: Zdog.TAU / 4 },
+        color: '#8a8478', frontFace: '#c8c2b0', backface: '#4a4436', stroke: 1
+      });
+
+      // 桌子
+      const t = new Zdog.Anchor({ addTo: illo, translate: { x: 6, y: 74, z: 52 } });
+      new Zdog.Box({
+        addTo: t, width: 140, height: 7, depth: 66,
+        color: C.wood, leftFace: C.woodDark, rightFace: C.woodDark,
+        topFace: C.wood, bottomFace: C.woodDark,
+        frontFace: C.wood, rearFace: C.woodDark, stroke: 1
+      });
+      [[-58, -24], [58, -24], [-58, 24], [58, 24]].forEach(function (p) {
+        new Zdog.Box({
+          addTo: t, width: 7, height: 24, depth: 7,
+          translate: { x: p[0], y: 16, z: p[1] }, color: C.woodDark, stroke: 1
+        });
+      });
+      // 桌上的卷宗
+      new Zdog.Box({
+        addTo: t, width: 60, height: 10, depth: 44,
+        translate: { y: -9 },
+        color: '#7a6a52', leftFace: '#4a3f30', rightFace: '#4a3f30',
+        topFace: '#8a7a5c', bottomFace: '#4a3f30',
+        frontFace: '#6a5a46', rearFace: '#4a3f30', stroke: 1
+      });
+
+      illo.rotate = { x: -0.1, y: -0.14 };
+      illo.translate = { y: -2 };
+    }, 1.15);
+  };
+
+  /* ============================================================
+     殡仪馆 · 冷藏间
+     ============================================================ */
+  D2.funeral = function (host) {
+    mount(host, function (illo) {
+      new Zdog.Rect({
+        addTo: illo, width: 440, height: 254,
+        translate: { y: 100, z: -40 }, rotate: { x: Zdog.TAU / 4 },
+        fill: true, color: '#191b1c', stroke: 1
+      });
+      new Zdog.Rect({
+        addTo: illo, width: 440, height: 216,
+        translate: { y: -4, z: -128 }, fill: true, color: '#202325', stroke: 1
+      });
+
+      // 冷柜墙：3×3 抽屉
+      for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < 3; c++) {
+          const x = -108 + c * 108;
+          const y = -68 + r * 62;
+          new Zdog.Box({
+            addTo: illo, width: 100, height: 56, depth: 10,
+            translate: { x: x, y: y, z: -120 },
+            color: '#3a4044', leftFace: '#242a2e', rightFace: '#242a2e',
+            topFace: '#464c50', bottomFace: '#242a2e',
+            frontFace: '#3f4549', rearFace: '#242a2e', stroke: 1
+          });
+          // 拉手
+          new Zdog.Box({
+            addTo: illo, width: 18, height: 5, depth: 3,
+            translate: { x: x, y: y + 16, z: -114 },
+            color: '#5a6064', stroke: 0
+          });
+        }
+      }
+
+      // 半开的抽屉（右中）
+      new Zdog.Box({
+        addTo: illo, width: 98, height: 54, depth: 46,
+        translate: { x: 108, y: -6, z: -96 },
+        color: '#3f4549', leftFace: '#242a2e', rightFace: '#242a2e',
+        topFace: '#4a5054', bottomFace: '#242a2e',
+        frontFace: '#454b4f', rearFace: '#242a2e', stroke: 1
+      });
+      // 抽屉里的白布
+      new Zdog.Box({
+        addTo: illo, width: 88, height: 8, depth: 38,
+        translate: { x: 108, y: -28, z: -96 },
+        color: '#8a8a82', leftFace: '#5a5a54', rightFace: '#5a5a54',
+        topFace: '#9a9a92', bottomFace: '#5a5a54',
+        frontFace: '#8a8a82', rearFace: '#5a5a54', stroke: 1
+      });
+
+      // 花圈（左前）
+      const wreath = new Zdog.Anchor({ addTo: illo, translate: { x: -168, y: 56, z: 36 } });
+      new Zdog.Ellipse({
+        addTo: wreath, diameter: 62, stroke: 12,
+        rotate: { x: -0.3 },
+        color: '#3a4a34', fill: false
+      });
+      new Zdog.Ellipse({
+        addTo: wreath, diameter: 40, stroke: 3,
+        rotate: { x: -0.3 },
+        color: '#8a8a7a', fill: false
+      });
+      // 挽联（撕了一半）
+      new Zdog.Box({
+        addTo: wreath, width: 8, height: 54, depth: 1,
+        translate: { x: 0, y: 34, z: 2 },
+        color: '#b0aca0', stroke: 0
+      });
+
+      // 不锈钢台
+      const steel = new Zdog.Anchor({ addTo: illo, translate: { x: 40, y: 76, z: 60 } });
+      new Zdog.Box({
+        addTo: steel, width: 150, height: 8, depth: 58,
+        color: '#4a5054', leftFace: '#2a3034', rightFace: '#2a3034',
+        topFace: '#5a6064', bottomFace: '#2a3034',
+        frontFace: '#4a5054', rearFace: '#2a3034', stroke: 1
+      });
+      [[-62, -20], [62, -20], [-62, 20], [62, 20]].forEach(function (p) {
+        new Zdog.Box({
+          addTo: steel, width: 8, height: 26, depth: 8,
+          translate: { x: p[0], y: 17, z: p[1] }, color: '#33383a', stroke: 1
+        });
+      });
+
+      illo.rotate = { x: -0.08, y: 0.1 };
+      illo.translate = { y: -2 };
+    }, 1.1);
+  };
+
+  /* ============================================================
+     302 门外
+     ============================================================ */
+  D2.oldhouse = function (host) {
+    mount(host, function (illo) {
+      new Zdog.Rect({
+        addTo: illo, width: 300, height: 200,
+        translate: { y: 0, z: -60 },
+        fill: true, color: '#1a1611', stroke: 1
+      });
+      new Zdog.Rect({
+        addTo: illo, width: 300, height: 200,
+        translate: { y: 106, z: 40 }, rotate: { x: Zdog.TAU / 4 },
+        fill: true, color: '#131009', stroke: 1
+      });
+
+      // 门
+      const door = new Zdog.Anchor({ addTo: illo, translate: { x: 0, y: -6, z: -56 } });
+      new Zdog.Box({
+        addTo: door, width: 118, height: 168, depth: 12,
+        color: '#2e251b', leftFace: '#181209', rightFace: '#181209',
+        topFace: '#3a3025', bottomFace: '#181209',
+        frontFace: '#332a1e', rearFace: '#181209', stroke: 1
+      });
+      // 门框
+      new Zdog.Box({
+        addTo: door, width: 132, height: 182, depth: 8,
+        translate: { z: -6 },
+        color: '#221c14', leftFace: '#120e08', rightFace: '#120e08',
+        topFace: '#2a231a', bottomFace: '#120e08',
+        frontFace: '#1e1911', rearFace: '#120e08', stroke: 1
+      });
+      // 封条（横的一道光）
+      new Zdog.Box({
+        addTo: door, width: 120, height: 8, depth: 2,
+        translate: { y: 8, z: 8 },
+        rotate: { z: 0.06 },
+        color: '#a89a78', stroke: 0
+      });
+      // 门缝的光
+      new Zdog.Box({
+        addTo: door, width: 112, height: 3, depth: 3,
+        translate: { y: 80, z: 6 },
+        color: '#c9a870', stroke: 0
+      });
+      // 门把手
+      new Zdog.Cylinder({
+        addTo: door, diameter: 10, length: 12,
+        translate: { x: 40, y: 10, z: 12 },
+        rotate: { x: Zdog.TAU / 4 },
+        color: '#6a5a3e', frontFace: '#8a7a5c', backface: '#4a3f30', stroke: 1
+      });
+      // 对联（只剩一条）
+      new Zdog.Box({
+        addTo: door, width: 11, height: 78, depth: 1,
+        translate: { x: 48, y: -40, z: 8 },
+        rotate: { z: -0.04 },
+        color: '#7a2a24', stroke: 0
+      });
+
+      illo.rotate = { x: -0.04, y: 0 };
+    }, 1.4);
+  };
+
+  const MAP = {
+    hall: D2.hall,
+    police: D2.police,
+    archive: D2.archive,
+    funeral: D2.funeral,
+    oldhouse: D2.oldhouse
+  };
+
+  D2.mount = function (sceneId, host) {
+    if (!root.Zdog || !host) return;
+    const fn = MAP[sceneId];
+    if (!fn) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'zd-wrap';
+    const TONE = { hall: 0.95, police: 1.0, archive: 1.05, funeral: 1.1, oldhouse: 1.0 };
+    wrap.style.cssText =
+      'position:absolute;inset:0;z-index:3;pointer-events:none;' +
+      'filter:brightness(' + (TONE[sceneId] || 1) + ') contrast(1.06) saturate(.85)';
+    host.appendChild(wrap);
+    fn(wrap);
+  };
+
+  root.ZD2 = D2;
+})(typeof self !== 'undefined' ? self : this);
+
+</script>
+<script>
+/* ink-story.js */
+/* ============================================================
+   ink-story.js · 叙事引擎（ink 结构）
+   用 ink 的 knot/stitch 思维组织分支：
+   在这里写成纯数据，运行时按玩家的线索状态选路。
+   ============================================================ */
+
+/* ============================================================
+   第一季 · 主线骨架
+   六个 knot，每个 knot 有若干 stitch（按条件进入）
+   ============================================================ */
+window.STORY = {
+  knots: {
+    /* ---------- D1 开场 ---------- */
+    opening: {
+      stitch: 'arrive',
+      branches: [
+        {
+          when: () => true,
+          lines: [
+            '雾从江上爬上来的时候，望安路的路灯只剩一团黄。',
+            '你站在望安公寓楼下，抬头看三楼。',
+            '东头那扇窗黑着。西头那扇，也黑着。',
+            '但西头的门缝底下，透出一点光。'
+          ]
+        }
+      ]
+    },
+
+    /* ---------- 302 门口 ---------- */
+    door302: {
+      branches: [
+        {
+          when: (S) => S.clues.includes('E-06'),
+          lines: [
+            '门开着一条缝。',
+            '里面的灯还亮着，是那种老式的暖黄。',
+            '你已经知道地上有刀。'
+          ]
+        },
+        {
+          when: () => true,
+          lines: [
+            '门开着一条缝。',
+            '里面的灯还亮着。',
+            '门上的对联只剩一条，红纸被风撕的。'
+          ]
+        }
+      ]
+    },
+
+    /* ---------- 后院 ---------- */
+    yard: {
+      branches: [
+        {
+          when: (S) => S.flags.dugSoil && S.clues.includes('E-15'),
+          lines: [
+            '土又被人翻过一遍。',
+            '这次的坑比昨天深。',
+            '你蹲下去，手伸进土里——碰到铁。'
+          ]
+        },
+        {
+          when: (S) => S.flags.dugSoil,
+          lines: ['你挖过的那块土，早上又被踩平了。']
+        },
+        {
+          when: () => true,
+          lines: [
+            '树冠压得很低，遮住 301 半个窗。',
+            '树下的土比周围深，颜色新。',
+            '像是被人翻过，又用脚踩平了。'
+          ]
+        }
+      ]
+    },
+
+    /* ---------- 问周守义 ---------- */
+    zhou: {
+      branches: [
+        {
+          when: (S) => (S.talked['talk_zhou'] || 0) >= 3,
+          lines: [
+            '他不再看你了。',
+            '钥匙串在他手里，一颗一颗被数过去。',
+            '数到第四颗，他停了。'
+          ]
+        },
+        {
+          when: (S) => (S.talked['talk_zhou'] || 0) === 2,
+          lines: [
+            '「后来那些上楼的，都是我一个个叫下来的。」',
+            '他说这句话的时候，眼睛在算你信不信。'
+          ]
+        },
+        {
+          when: () => true,
+          lines: [
+            '灰保安服，袖口磨得发亮。',
+            '腰上一串钥匙，走路的时候响。',
+            '「十一点后别下楼。」他说，「槐树底下别踩。」'
+          ]
+        }
+      ]
+    },
+
+    /* ---------- 问苏晚 ---------- */
+    suwan: {
+      branches: [
+        {
+          when: (S) => S.clues.includes('E-01'),
+          lines: [
+            '你把发卡放在桌上。',
+            '她盯着看了很久，没有伸手。',
+            '「……这个，是我掉在那儿的吗。」'
+          ]
+        },
+        {
+          when: (S) => (S.talked['talk_suwan'] || 0) >= 2,
+          lines: [
+            '「我上去过，就一会儿。」',
+            '袖子太长，她的手缩在里面。'
+          ]
+        },
+        {
+          when: () => true,
+          lines: [
+            '十六岁，高二。校服外套太大。',
+            '头发上别着一只兔子发卡——只有一只耳朵。',
+            '「那晚我在家写卷子。」'
+          ]
+        }
+      ]
+    },
+
+    /* ---------- 负一楼摊牌 ---------- */
+    b1_showing: {
+      branches: [
+        {
+          when: (S) => S.clues.length >= 12,
+          lines: [
+            '六个人都在。',
+            '你把东西摊在水泥地上。',
+            '「六支药。」你说，「一刀刺心。」',
+            '「还有一枚发卡。」',
+            '没有人说话。灯丝闪了一下。'
+          ]
+        },
+        {
+          when: (S) => S.clues.length >= 8,
+          lines: [
+            '你摊出来的东西不够。',
+            '「就这些？」周守义问。',
+            '「这些谁都能捡到。」'
+          ]
+        },
+        {
+          when: () => true,
+          lines: [
+            '负一楼的灯还亮着。',
+            '水泥地上有三圈水渍。',
+            '你手里的东西还不够摊。'
+          ]
+        }
+      ]
+    },
+
+    /* ---------- 结局 ---------- */
+    ending: {
+      branches: [
+        {
+          when: (S) => S.clues.length >= 14 && S.clues.includes('E-01') && S.clues.includes('E-12'),
+          key: 'ironbox',
+          lines: [
+            '周守义把铁皮盒放在桌上。',
+            '盒盖锈住了，他抠了三下才掀开。',
+            '警号牌、三等功奖章、半包没抽完的烟。',
+            '「她父亲的东西。」他说，「我留了十四年。」',
+            '雾散了。'
+          ]
+        },
+        {
+          when: (S) => S.clues.length >= 12,
+          key: 'substitute',
+          lines: [
+            '你指向周守义。',
+            '他没有反驳。',
+            '苏晚忽然开口：「不是他。」',
+            '她说了第二遍：「是我。」',
+            '周守义被带走的时候，回头看了她一眼。',
+            '那一眼里没有恨。'
+          ]
+        },
+        {
+          when: (S) => S.clues.length >= 8,
+          key: 'six',
+          lines: [
+            '你把六个人的把柄都摊了出来。',
+            '他们开始互相指。',
+            '一个指一个，声音越来越大。',
+            '最后六个人都被带走了。',
+            '案由写着「黑吃黑」。',
+            '苏卫国的名字，还是没有洗清。'
+          ]
+        },
+        {
+          when: () => true,
+          key: 'fog',
+          lines: [
+            '你什么都没能证明。',
+            '六个人齐口否认。',
+            '你被赶出楼的时候，天快亮了。',
+            '第二天早上，后院的槐树被锯了。',
+            '树墩上有一圈新的年轮。'
+          ]
+        }
+      ]
+    }
+  },
+
+  /* 取一段文本 */
+  say(knot, S) {
+    const k = this.knots[knot];
+    if (!k) return [];
+    for (const b of k.branches) {
+      try {
+        if (b.when(S)) return b.lines;
+      } catch (e) {}
+    }
+    return [];
+  },
+
+  /* 取结局 */
+  ending(S) {
+    const k = this.knots.ending;
+    for (const b of k.branches) {
+      try {
+        if (b.when(S)) return { key: b.key || 'unknown', lines: b.lines };
+      } catch (e) {}
+    }
+    return { key: 'fog', lines: [] };
+  }
+};
+
+</script>
+<script>
 /* texture.js */
 /* ============================================================
    texture.js · 程序化纹理
@@ -10143,10 +10866,9 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
 
     // 有体积的房间：用 Zdog 画
     try {
-      if (window.ZD) {
-        const host = document.querySelector('#scenes .scene');
-        if (host) window.ZD.mount(S.scene, host);
-      }
+      const host = document.querySelector('#scenes .scene');
+      if (host && window.ZD) window.ZD.mount(S.scene, host);
+      if (host && window.ZD2) window.ZD2.mount(S.scene, host);
     } catch (e) {}
 
     // GPU 渲染层跟着换
