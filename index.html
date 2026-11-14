@@ -9062,9 +9062,9 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
       if (S.finished) return;
       S.hour += 1;
       renderHud();
-      if (S.hour >= 23 * 60 + 30) {
-        stopClock();
-        finish();
+      // 自由探索：时间只是氛围，不结束游戏
+      if (S.hour >= 24 * 60) {
+        S.hour -= 24 * 60;
       }
     }, 3000);
   }
@@ -9220,7 +9220,7 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
       return;
     }
     busy = true;
-    S.stamina = Math.max(0, S.stamina - 2);
+    S.stamina = Math.max(0, S.stamina - 0.6);
     S.hour += 8;
     window.SFX.hit('step');
     flash.classList.add('on');
@@ -9241,7 +9241,7 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
     if (busy || S.finished) return;
 
     const rest = REST_IDS.indexOf(hs.id) >= 0;
-    if (S.stamina <= 0 && !rest) {
+    if (false) {
       await narrate('你抬不起手。\n得先找个地方坐下——床、椅子、长椅都行。');
       return;
     }
@@ -9273,7 +9273,7 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
       S.stamina = Math.min(100, S.stamina + 55);
       S.hour += 40;
     } else {
-      S.stamina = Math.max(0, S.stamina - 2);
+      S.stamina = Math.max(0, S.stamina - 0.6);
     }
 
     if (res.text) await narrate(res.text);
@@ -9364,7 +9364,7 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
       S.flags.warned = true;
       await narrate('快十一点了。这一天快过完了。');
     }
-    if (!S.finished && S.hour >= 23 * 60 + 30) {
+    if (false) {
       busy = false;
       return finish();
     }
