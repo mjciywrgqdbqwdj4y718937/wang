@@ -3144,6 +3144,69 @@ html, body {
 }
 
 </style>
+<style>
+/* grade.css */
+/* ============================================================
+   grade.css · 全局调色与景深
+   让十几个场景看起来是同一部片子：统一对比、统一色偏、
+   统一暗角、统一颗粒、统一景深。
+   ============================================================ */
+
+/* 场景统一调色：压高光、提暗部蓝、去饱和 */
+#scenes .scene {
+  filter: contrast(1.10) saturate(0.82) brightness(0.98);
+}
+#scenes .scene::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 12;
+  background:
+    radial-gradient(ellipse 78% 72% at 50% 48%, transparent 42%, rgba(3,4,5,.55) 100%),
+    linear-gradient(180deg, rgba(8,12,16,.35) 0%, transparent 22%, transparent 78%, rgba(6,6,8,.45) 100%);
+}
+
+/* 场景统一青调（冷场压蓝、暖场留黄） */
+#scenes .scene .lyr.far,
+#scenes .scene .far {
+  box-shadow: inset 0 0 120px 40px rgba(10,16,22,.45);
+}
+
+/* 景深：近景一律虚化，中景实 */
+#scenes .scene .lyr.near,
+#scenes .scene .near {
+  filter: blur(2.4px);
+}
+
+/* 顶栏与提示统一压暗，不和画面抢 */
+.topbar, .exits .ex, .hs span {
+  text-shadow: 0 1px 6px rgba(0,0,0,.9);
+}
+
+/* 面板统一质感 */
+.panel .ln { letter-spacing: .02em; }
+.panel .ln:first-child { margin-top: 0; }
+
+/* 场景切换时的一次闪光降到很低，别刺眼 */
+#flash.on { animation: none; opacity: 0; }
+
+/* 走廊、后巷这类暗场再压一档 */
+.s-hall, .s-b1, .s-oldhouse, .s-archive {
+  filter: contrast(1.14) saturate(0.72) brightness(0.94);
+}
+
+/* 后院、江边这类外景留一点空气感 */
+.s-yard, .s-river, .s-street {
+  filter: contrast(1.06) saturate(0.86) brightness(1.02);
+}
+
+/* 室内暖场 */
+.s-room, .s-home, .s-402, .s-shopup, .s-attic {
+  filter: contrast(1.08) saturate(0.9) brightness(1.0);
+}
+
+</style>
 </head>
 <body>
 
