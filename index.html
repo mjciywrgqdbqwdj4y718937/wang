@@ -2812,6 +2812,209 @@ html, body {
 
 </style>
 <style>
+/* scenes4.css */
+/* ============================================================
+   scenes4.css · 四个新场景
+   后院 / 负一楼 / 402 / 档案室
+   光都从画面外的单一方向切进来，人永远在暗侧
+   ============================================================ */
+
+/* ============================================================
+   后院 · 老槐树
+   ============================================================ */
+.s-yard { background:#0b0d0c; filter:saturate(.55) contrast(1.12) brightness(1.0); }
+.s-yard .far {
+  background:
+    radial-gradient(ellipse 30% 22% at 50% 6%, rgba(120,140,150,.18), transparent 70%),
+    linear-gradient(180deg, #14181a 0%, #101413 42%, #0a0c0b 100%);
+}
+/* 楼体背立面 */
+.s-yard .wall {
+  position:absolute; left:0; right:0; top:0; height:26%;
+  background: linear-gradient(180deg, #1b1f20 0%, #151918 100%);
+}
+.s-yard .wall::after {
+  content:""; position:absolute; left:0; right:0; bottom:0; height:2px;
+  background: rgba(150,160,150,.14);
+}
+/* 槐树 */
+.s-yard .tree2 { position:absolute; left:30%; top:2%; width:36%; height:60%; }
+.s-yard .tree2 svg { width:100%; height:100%; display:block; filter: blur(2px) brightness(.95) saturate(.8); opacity:.95; }
+/* 地面 */
+.s-yard .ground {
+  position:absolute; left:0; right:0; top:56%; bottom:0;
+  background: linear-gradient(180deg, #16151180 0%, #121110 40%, #0b0a09 100%);
+}
+/* 被翻过的土 */
+.s-yard .soil {
+  position:absolute; left:36%; top:57%; width:32%; height:20%;
+  border-radius:50% 46% 52% 48%;
+  background: radial-gradient(ellipse at 50% 42%, rgba(126,112,84,.75) 0%, rgba(78,70,54,.45) 46%, transparent 78%);
+  filter: blur(6px);
+}
+/* 301 的窗 */
+.s-yard .win3 {
+  position:absolute; left:70%; top:8%; width:15%; height:15%;
+  background: linear-gradient(180deg, #10161c 0%, #0a0e12 100%);
+  border: calc(var(--u)*.5) solid #0a0908;
+  box-shadow: 0 0 calc(var(--u)*2) rgba(120,150,180,.10);
+}
+.s-yard .win3::after {
+  content:""; position:absolute; left:48%; top:0; width:2px; height:100%; background:#0a0908;
+}
+.s-yard .near {
+  background:
+    linear-gradient(180deg, rgba(4,5,4,.85) 0%, transparent 18%, transparent 86%, rgba(4,5,4,.94) 100%),
+    linear-gradient(90deg, rgba(4,5,4,.7) 0%, transparent 12%, transparent 88%, rgba(4,5,4,.7) 100%);
+  filter: blur(calc(var(--u)*.28));
+}
+
+/* ============================================================
+   负一楼 · 杂物间
+   ============================================================ */
+.s-b1 { background:#0a0908; filter:saturate(.5) contrast(1.2) brightness(.98); }
+.s-b1 .far {
+  background:
+    radial-gradient(ellipse 14% 18% at 50% 12%, rgba(255,214,150,.30), transparent 72%),
+    linear-gradient(180deg, #1a1713 0%, #131110 52%, #080706 100%);
+}
+/* 挂着的灯泡 */
+.s-b1 .bulb3 {
+  position:absolute; left:48%; top:2%; width:calc(var(--u)*.2); height:20%;
+  background:#14100c;
+}
+.s-b1 .bulb3::after {
+  content:""; position:absolute; left:50%; top:100%; width:calc(var(--u)*1.3); height:calc(var(--u)*1.7);
+  transform:translateX(-50%); border-radius:50%;
+  background: radial-gradient(circle at 50% 40%, rgba(255,232,190,.92), rgba(255,200,130,.3) 52%, transparent 76%);
+  box-shadow: 0 0 calc(var(--u)*6) calc(var(--u)*1.6) rgba(255,200,130,.16);
+  animation: glow 9s ease-in-out infinite;
+}
+/* 编织袋 */
+.s-b1 .sacks { position:absolute; left:6%; top:42%; width:28%; height:34%; }
+.s-b1 .sacks svg { width:100%; height:100%; display:block; filter: blur(1.2px) brightness(.95); }
+/* 旧报纸 */
+.s-b1 .papers {
+  position:absolute; left:29%; top:66%; width:26%; height:18%;
+  background: radial-gradient(ellipse at 46% 40%, rgba(132,122,98,.75), rgba(64,58,46,.4) 62%, transparent 84%);
+  filter: blur(5px);
+}
+/* 稀料桶 */
+.s-b1 .can { position:absolute; left:55%; top:44%; width:16%; height:32%; }
+.s-b1 .can svg { width:100%; height:100%; display:block; filter: blur(.8px) brightness(1.05); }
+/* 地面 */
+.s-b1 .floor2 {
+  position:absolute; left:0; right:0; top:74%; bottom:0;
+  background:
+    radial-gradient(ellipse 40% 30% at 46% 16%, rgba(255,220,170,.10), transparent 72%),
+    repeating-linear-gradient(90deg, rgba(0,0,0,.28) 0 2%, transparent 2% 11%),
+    linear-gradient(180deg, #1a1714 0%, #0e0c0a 100%);
+}
+.s-b1 .near {
+  background:
+    linear-gradient(180deg, rgba(3,3,3,.9) 0%, transparent 16%, transparent 88%, rgba(3,3,3,.96) 100%),
+    linear-gradient(90deg, rgba(3,3,3,.85) 0%, transparent 14%, transparent 86%, rgba(3,3,3,.85) 100%);
+  filter: blur(calc(var(--u)*.3));
+}
+
+/* ============================================================
+   402 室
+   ============================================================ */
+.s-402 { background:#0f0c09; filter:saturate(.6) contrast(1.1) brightness(1.02); }
+.s-402 .far {
+  background:
+    radial-gradient(ellipse 22% 26% at 78% 22%, rgba(255,214,160,.18), transparent 72%),
+    radial-gradient(ellipse 36% 34% at 40% 52%, rgba(200,160,110,.06), transparent 76%),
+    linear-gradient(180deg, #221b14 0%, #1a150f 55%, #0c0a08 100%);
+}
+/* 画架 */
+.s-402 .easel {
+  position:absolute; left:14%; top:22%; width:28%; height:48%;
+  border-left: calc(var(--u)*.32) solid #2a2118;
+  border-right: calc(var(--u)*.32) solid #2a2118;
+  transform: perspective(600px) rotateY(-4deg);
+}
+.s-402 .easel::after {
+  content:""; position:absolute; left:-6%; right:-6%; top:8%; height:64%;
+  background:
+    linear-gradient(180deg, #3a3126 0%, #2a231a 60%, #1c1710 100%);
+  box-shadow: inset 0 0 22px rgba(0,0,0,.6);
+}
+/* 靠墙的画框 */
+.s-402 .frames {
+  position:absolute; left:46%; top:34%; width:20%; height:34%;
+  background:
+    linear-gradient(90deg, transparent 0 46%, rgba(0,0,0,.5) 46% 48%, transparent 48%),
+    linear-gradient(180deg, #302920 0%, #241e17 100%);
+  transform: rotate(-3deg);
+  box-shadow: 2px 2px 0 rgba(0,0,0,.4), 6px 6px 0 rgba(20,16,12,.9);
+}
+/* 小桌 */
+.s-402 .table2 {
+  position:absolute; left:34%; top:62%; width:26%; height:16%;
+  background: linear-gradient(180deg, #3a3025 0%, #241d15 100%);
+  border-radius: 2px;
+  box-shadow: 0 calc(var(--u)*.5) 0 rgba(0,0,0,.6), 0 calc(var(--u)*-1.2) calc(var(--u)*4) rgba(255,200,140,.06);
+}
+.s-402 .near {
+  background:
+    linear-gradient(180deg, rgba(5,4,3,.88) 0%, transparent 14%, transparent 88%, rgba(5,4,3,.95) 100%),
+    linear-gradient(90deg, rgba(5,4,3,.8) 0%, transparent 11%, transparent 89%, rgba(5,4,3,.8) 100%);
+  filter: blur(calc(var(--u)*.26));
+}
+
+/* ============================================================
+   派出所 · 档案室
+   ============================================================ */
+.s-archive { background:#0c0d0e; filter:saturate(.4) contrast(1.18) brightness(1.0); }
+.s-archive .far {
+  background:
+    radial-gradient(ellipse 16% 20% at 62% 14%, rgba(210,225,235,.22), transparent 72%),
+    linear-gradient(180deg, #171a1c 0%, #121516 56%, #080909 100%);
+}
+/* 铁皮柜 */
+.s-archive .cab {
+  position:absolute; left:6%; top:24%; width:34%; height:50%;
+  background:
+    repeating-linear-gradient(180deg, rgba(0,0,0,.35) 0 1px, transparent 1px 22%),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0 1px, transparent 1px 12%),
+    linear-gradient(180deg, #2a2e2f 0%, #1e2223 100%);
+  box-shadow: inset -10px 0 24px rgba(0,0,0,.5);
+}
+.s-archive .cab::after {
+  content:""; position:absolute; left:6%; top:14%; width:16%; height:5%;
+  background: rgba(200,180,140,.14);
+  border-radius:1px;
+}
+/* 拉绳灯 */
+.s-archive .cord {
+  position:absolute; left:50%; top:0; width:2px; height:26%;
+  background:#1d2021;
+}
+.s-archive .cord::after {
+  content:""; position:absolute; left:50%; top:100%; width:calc(var(--u)*1.6); height:calc(var(--u)*.9);
+  transform:translateX(-50%);
+  background: radial-gradient(ellipse at 50% 30%, rgba(220,235,245,.5), transparent 74%);
+  box-shadow: 0 0 calc(var(--u)*3) rgba(210,230,245,.12);
+}
+/* 卷宗 */
+.s-archive .files {
+  position:absolute; left:42%; top:58%; width:26%; height:18%;
+  background:
+    repeating-linear-gradient(88deg, rgba(0,0,0,.25) 0 1px, transparent 1px 5%),
+    linear-gradient(180deg, #4a4030 0%, #322b1f 100%);
+  transform: rotate(1deg);
+  box-shadow: 0 2px 0 rgba(0,0,0,.5);
+}
+.s-archive .near {
+  background:
+    linear-gradient(180deg, rgba(4,5,5,.9) 0%, transparent 15%, transparent 88%, rgba(4,5,5,.96) 100%),
+    linear-gradient(90deg, rgba(4,5,5,.82) 0%, transparent 12%, transparent 88%, rgba(4,5,5,.82) 100%);
+  filter: blur(calc(var(--u)*.24));
+}
+
+</style>
+<style>
 /* gl.css */
 /* ============================================================
    gl.css · GPU 粒子层的容器
@@ -6635,6 +6838,381 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
 
 </script>
 <script>
+/* world4.js */
+/* ============================================================
+   world4.js · 四个新场景
+   后院老槐树 / 负一楼杂物间 / 402 室 / 派出所档案室
+   ============================================================ */
+(function (root) {
+  'use strict';
+
+  const S4 = {};
+
+  /* ============================================================
+     后院 · 老槐树
+     ============================================================ */
+  S4.yard = {
+    title: '望安公寓 · 后院',
+    cls: 's-yard',
+    layer: () =>
+      '<div class="lyr far"></div>' +
+      '<div class="wall"></div>' +
+      '<div class="tree2">' +
+      '<svg viewBox="0 0 200 320" preserveAspectRatio="xMidYMax meet">' +
+      '<defs><radialGradient id="lg1" cx="50%" cy="40%"><stop offset="0" stop-color="#4a5a36"/><stop offset="1" stop-color="#222b1a"/></radialGradient></defs>' +
+      '<path d="M96 318 C94 260 92 210 88 168 L112 168 C108 210 106 260 104 318 Z" fill="#241c14"/>' +
+      '<path d="M88 168 L70 150 L96 162 Z" fill="#1e1710"/>' +
+      '<path d="M112 168 L132 148 L104 162 Z" fill="#1e1710"/>' +
+      '<ellipse cx="100" cy="96" rx="98" ry="74" fill="url(#lg1)"/>' +
+      '<ellipse cx="52" cy="74" rx="60" ry="48" fill="#3c4a2c" opacity=".85"/>' +
+      '<ellipse cx="150" cy="80" rx="62" ry="50" fill="#33402a" opacity=".85"/>' +
+      '<ellipse cx="104" cy="52" rx="72" ry="46" fill="#42522f" opacity=".8"/>' +
+      '<ellipse cx="72" cy="118" rx="52" ry="34" fill="#2b3521" opacity=".9"/>' +
+      '<ellipse cx="136" cy="120" rx="50" ry="32" fill="#2b3521" opacity=".9"/>' +
+      '</svg>' +
+      '</div>' +
+      '<div class="ground"></div>' +
+      '<div class="soil"></div>' +
+      '<div class="win3"></div>' +
+      '<div class="lyr near"></div>',
+    hotspots: [
+      {
+        id: 'tree',
+        label: '老槐树',
+        rect: [36, 8, 30, 44],
+        run: () => ({
+          text: '树冠压得很低，遮住 301 半个窗。\n树皮纵向裂开，沟里积着黑泥。\n你伸手按了一下，是湿的。',
+          cost: 8
+        })
+      },
+      {
+        id: 'soil',
+        label: '槐树下的土',
+        rect: [38, 58, 28, 18],
+        run: (S) => {
+          if (!S.flags.dugSoil) {
+            S.flags.dugSoil = true;
+            return {
+              text: '土被翻过，又踩平，颜色比旁边浅一层。\n手电扫过去，土面有一根断绳头，朝下埋着。\n扒开两捧，指尖碰到铁的凉。\n土从指缝里落回原处。',
+              cost: 14,
+              clue: 'E-15'
+            };
+          }
+          return { text: '坑只扒开一点点。\n你把它填回去了。\n明天还来。', cost: 6 };
+        }
+      },
+      {
+        id: 'wall2',
+        label: '矮砖墙',
+        rect: [4, 34, 16, 26],
+        run: () => ({
+          text: '砖墙上有水痕，一道一道，从墙头往下。\n墙外是别人的后院，也长着树。\n雾从墙头爬进来，到膝盖那么高。',
+          cost: 8
+        })
+      },
+      {
+        id: 'fog2',
+        label: '雾',
+        rect: [66, 30, 22, 30],
+        run: () => ({
+          text: '雾是从江上来的，贴着地走。\n它从围墙缺口进来，在树根那儿停了一下。\n你看着它慢慢把整个院子填满。',
+          cost: 6
+        })
+      },
+      {
+        id: 'win3',
+        label: '301 的窗',
+        rect: [70, 12, 16, 16],
+        run: () => ({
+          text: '从下往上看，301 的窗黑着。\n窗台上摆着一只杯子，杯沿有半个唇印。\n你在那儿住了一夜，从没往下看过。',
+          cost: 8
+        })
+      },
+      {
+        id: 'out_yard',
+        label: '回楼里',
+        rect: [2, 62, 8, 22],
+        run: () => ({ text: '后门没锁，一推就开。', cost: 4, go: 'hall' })
+      }
+    ]
+  };
+
+  /* ============================================================
+     负一楼 · 杂物间
+     ============================================================ */
+  S4.b1 = {
+    title: '望安公寓 · 负一楼',
+    cls: 's-b1',
+    layer: () =>
+      '<div class="lyr far"></div>' +
+      '<div class="bulb3"></div>' +
+      '<div class="sacks">' +
+      '<svg viewBox="0 0 220 200" preserveAspectRatio="none">' +
+      '<path d="M18 176 C10 140 22 108 44 96 C58 88 76 92 88 98 C104 106 116 132 112 176 Z" fill="#3a3428"/>' +
+      '<path d="M96 178 C92 146 104 118 126 110 C144 104 162 116 168 140 C172 160 166 178 160 180 Z" fill="#2f2a20"/>' +
+      '<path d="M150 180 C148 156 158 138 176 134 C192 131 206 146 206 168 L204 180 Z" fill="#26221a"/>' +
+      '<path d="M18 176 C10 140 22 108 44 96" stroke="#4a4436" stroke-width="2" fill="none" opacity=".5"/>' +
+      '<path d="M96 178 C92 146 104 118 126 110" stroke="#4a4436" stroke-width="2" fill="none" opacity=".45"/>' +
+      '</svg>' +
+      '</div>' +
+      '<div class="papers"></div>' +
+      '<div class="can">' +
+      '<svg viewBox="0 0 100 160" preserveAspectRatio="none">' +
+      '<defs><linearGradient id="canG" x1="0" x2="1"><stop offset="0" stop-color="#1a1714"/><stop offset=".34" stop-color="#3b372f"/><stop offset=".62" stop-color="#252119"/><stop offset="1" stop-color="#12100d"/></linearGradient></defs>' +
+      '<ellipse cx="50" cy="12" rx="42" ry="9" fill="#3f3a30"/>' +
+      '<rect x="8" y="12" width="84" height="140" fill="url(#canG)"/>' +
+      '<ellipse cx="50" cy="150" rx="42" ry="9" fill="#1a1714"/>' +
+      '<rect x="20" y="52" width="60" height="3" fill="#0d0b09" opacity=".7"/>' +
+      '<rect x="20" y="98" width="60" height="3" fill="#0d0b09" opacity=".6"/>' +
+      '<path d="M84 30 C88 60 86 96 82 130" stroke="#4a453a" stroke-width="2" fill="none" opacity=".4"/>' +
+      '</svg>' +
+      '</div>' +
+      '<div class="floor2"></div>' +
+      '<div class="lyr near"></div>',
+    hotspots: [
+      {
+        id: 'sacks',
+        label: '编织袋',
+        rect: [8, 46, 24, 30],
+        run: (S) => {
+          if (!S.flags.sawSacks) {
+            S.flags.sawSacks = true;
+            return {
+              text: '袋子在最里侧，袋口用尼龙绳扎了两道，绳头打了死结。\n手电照下去,袋身上的字掉了漆，只剩半个「档」字。\n袋子被拖出过，地上留一道灰痕，灰痕到门口就断了。',
+              cost: 12,
+              clue: 'E-13'
+            };
+          }
+          return { text: '四个袋子。三个装着旧报纸。\n第四个，你没敢打开。', cost: 6 };
+        }
+      },
+      {
+        id: 'papers2',
+        label: '旧报纸',
+        rect: [30, 66, 22, 16],
+        run: () => ({
+          text: '一堆旧报纸，压得实。\n最上面那张的日期是十四年前。\n纸边一抖就碎，碎下来一角。',
+          cost: 8
+        })
+      },
+      {
+        id: 'can',
+        label: '稀料桶',
+        rect: [56, 46, 16, 30],
+        run: (S) => {
+          if (!S.flags.sawCan) {
+            S.flags.sawCan = true;
+            return {
+              text: '铁桶高过膝盖，盖子没扣严，缝里透出一线亮。\n手电从桶口斜照，液面浮一层薄光。\n一根断尼龙绳沉在底下。\n你的手在桶口停住，没碰。',
+              cost: 14,
+              clue: 'E-14'
+            };
+          }
+          return { text: '桶还在那儿。\n盖子上的蓝漆字已经看不清了。', cost: 6 };
+        }
+      },
+      {
+        id: 'bulb3',
+        label: '坏灯',
+        rect: [44, 4, 12, 22],
+        run: () => ({
+          text: '一只 40W 白炽灯泡，没有灯罩，电线从门框上方的瓷夹垂下来。\n灯丝发红，亮不起来。\n它闪了一下，又闪了一下。',
+          cost: 6
+        })
+      },
+      {
+        id: 'floor2',
+        label: '水泥地',
+        rect: [10, 78, 60, 14],
+        run: () => ({
+          text: '水泥地返潮，灯泡照出三圈水渍。\n水渍边上有一处是干的，形状像方凳。\n十四年前，六个人在这儿站过。',
+          cost: 10
+        })
+      },
+      {
+        id: 'junk',
+        label: '废品堆',
+        rect: [76, 40, 20, 34],
+        run: () => ({
+          text: '纸壳、塑料瓶、捆好的报纸。\n老郑头的绳子还挂在钉子上，人不在。\n地上撒着半包烟的空壳。',
+          cost: 8
+        })
+      },
+      {
+        id: 'out_b1',
+        label: '上楼梯',
+        rect: [2, 30, 7, 24],
+        run: () => ({ text: '楼梯很窄。走到一半，上面那盏灯才亮。', cost: 5, go: 'hall' })
+      }
+    ]
+  };
+
+  /* ============================================================
+     402 室
+     ============================================================ */
+  S4.r402 = {
+    title: '望安公寓 · 402',
+    cls: 's-402',
+    layer: () =>
+      '<div class="lyr far"></div>' +
+      '<div class="easel"></div>' +
+      '<div class="frames"></div>' +
+      '<div class="table2"></div>' +
+      '<div class="lyr near"></div>',
+    hotspots: [
+      {
+        id: 'easel',
+        label: '画架',
+        rect: [16, 24, 26, 40],
+        run: () => ({
+          text: '画架上钉着一张没画完的画。\n画的是后院那棵树，从下往上看的角度。\n树干画到一半，停住了。',
+          cost: 10
+        })
+      },
+      {
+        id: 'frames',
+        label: '裱好的画框',
+        rect: [46, 34, 20, 32],
+        run: () => ({
+          text: '三个画框靠在墙上，都裱好了。\n画的都是同一个院子，不同的季节。\n最下面那张的角落签着「晚」字。',
+          cost: 8
+        })
+      },
+      {
+        id: 'paints',
+        label: '颜料',
+        rect: [6, 58, 16, 14],
+        run: () => ({
+          text: '颜料管挤得只剩皮，盖子有的没拧。\n一支赭石，一支普蓝，用得最多。\n抹布上全是这两种颜色。',
+          cost: 6
+        })
+      },
+      {
+        id: 'table2',
+        label: '小桌',
+        rect: [34, 62, 24, 18],
+        run: (S) => {
+          if (!S.flags.sawBox2) {
+            S.flags.sawBox2 = true;
+            return {
+              text: '桌上放着一只铁皮盒，盒盖沿锈住。\n指甲抠三下才掀开。\n里面是空的，底部一圈圆形压痕——放过什么东西，放了很久。',
+              cost: 14,
+              clue: 'E-02'
+            };
+          }
+          return { text: '空盒子还开着。\n圆形压痕在灯下很清楚。', cost: 6 };
+        }
+      },
+      {
+        id: 'pin',
+        label: '桌上的发卡',
+        rect: [58, 64, 10, 9],
+        run: (S) => {
+          if (!S.flags.sawPin) {
+            S.flags.sawPin = true;
+            return {
+              text: '一枚塑料的兔子发卡，白色，耳朵上的漆掉了一块。\n它不在苏晚头上。\n它在这张桌上，摆得很正。',
+              cost: 12,
+              clue: 'E-01'
+            };
+          }
+          return { text: '发卡还在桌上。\n你不敢碰它。', cost: 5 };
+        }
+      },
+      {
+        id: 'win4',
+        label: '窗',
+        rect: [70, 18, 24, 26],
+        run: () => ({
+          text: '402 的窗对着后院。\n从这个角度，能看见槐树下面的土。\n那一片比旁边浅。',
+          cost: 8
+        })
+      },
+      {
+        id: 'out_402',
+        label: '出门',
+        rect: [2, 36, 8, 24],
+        run: () => ({ text: '门开得很轻。', cost: 4, go: 'hall' })
+      }
+    ]
+  };
+
+  /* ============================================================
+     派出所 · 档案室
+     ============================================================ */
+  S4.archive = {
+    title: '城关派出所 · 档案室',
+    cls: 's-archive',
+    layer: () =>
+      '<div class="lyr far"></div>' +
+      '<div class="cab"></div>' +
+      '<div class="cord"></div>' +
+      '<div class="files"></div>' +
+      '<div class="lyr near"></div>',
+    hotspots: [
+      {
+        id: 'cab',
+        label: '铁皮柜',
+        rect: [8, 26, 30, 46],
+        run: () => ({
+          text: '一排铁皮档案柜，漆面起泡。\n标签纸发黄卷边，写着年份。\n第二层的锁芯换过，比别的新。',
+          cost: 10
+        })
+      },
+      {
+        id: 'files',
+        label: '卷宗',
+        rect: [40, 56, 26, 20],
+        run: (S) => {
+          if (!S.flags.sawFile) {
+            S.flags.sawFile = true;
+            return {
+              text: '牛皮纸卷宗，绳扣发脆，一拉就断。\n里面有现场照片七张。第八张的位置有胶痕。\n处理决定两页，第二页签名处是空的。',
+              cost: 16,
+              clue: 'E-12'
+            };
+          }
+          return { text: '卷宗摊在桌上。\n第七张照片上，地上的东西被圈了一个红圈。', cost: 8 };
+        }
+      },
+      {
+        id: 'cord',
+        label: '拉绳灯',
+        rect: [48, 6, 10, 24],
+        run: () => ({
+          text: '一根拉绳从灯泡垂下来，末端磨得发亮。\n一拉，亮；再拉，灭。\n顶上的灯罩里积了一层虫。',
+          cost: 6
+        })
+      },
+      {
+        id: 'dust3',
+        label: '灰尘',
+        rect: [70, 40, 20, 26],
+        run: () => ({
+          text: '窗玻璃糊了报纸，光从报纸缝里进来。\n一道白落在铁皮柜的编号上。\n灰尘在光里翻。',
+          cost: 6
+        })
+      },
+      {
+        id: 'door6',
+        label: '门',
+        rect: [90, 30, 8, 40],
+        run: () => ({ text: '门虚掩着。走廊里有人在打电话。', cost: 4, go: 'police' })
+      },
+      {
+        id: 'out_arch',
+        label: '回值班室',
+        rect: [2, 66, 8, 22],
+        run: () => ({ text: '走廊的灯比档案室亮。', cost: 4, go: 'police' })
+      }
+    ]
+  };
+
+  root.SCENES4 = S4;
+})(typeof self !== 'undefined' ? self : this);
+
+</script>
+<script>
 /* cast.js */
 /* ============================================================
    cast.js · 望安公寓的三个年轻人
@@ -7600,6 +8178,7 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
   const SCENES = window.WORLD_SCENES;
   if (window.SCENES2) Object.assign(SCENES, window.SCENES2);
   if (window.SCENES3) Object.assign(SCENES, window.SCENES3);
+  if (window.SCENES4) Object.assign(SCENES, window.SCENES4);
   const CHARS = window.CHARS || [];
   let HERO = null;
   const STORY = window.NPC_STORY || {};
@@ -7779,17 +8358,23 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
   /* ---------------- 场景之间的路 ---------------- */
   const LINKS = {
     room: ['hall'],
-    hall: ['room', 'street'],
+    hall: ['room', 'street', 'yard', 'b1', 'r402'],
     street: ['hall', 'shop', 'market', 'police', 'clinic', 'funeral', 'oldhouse', 'river'],
     shop: ['street'],
     home: ['street'],
     clinic: ['street'],
-    police: ['street'],
+    police: ['street', 'archive'],
+    archive: ['police'],
     funeral: ['street'],
     oldhouse: ['street', 'oldinside'],
     oldinside: ['oldhouse'],
     river: ['street'],
-    market: ['street']
+    market: ['street'],
+    attic: ['hall'],
+    shopup: ['hall'],
+    yard: ['hall'],
+    b1: ['hall'],
+    r402: ['hall']
   };
 
   /* 能坐下休息的地方 */
