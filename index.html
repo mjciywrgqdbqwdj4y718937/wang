@@ -3209,12 +3209,14 @@ html, body {
 /* ============================================================
    Zdog 伪 3D 层 · 融进暗场景
    ============================================================ */
-.zd-wrap {
-  filter: brightness(.92) contrast(1.06) saturate(.85);
-  opacity: .95;
-  mix-blend-mode: normal;
-}
+.zd-wrap { opacity: .95; }
 .zd-wrap canvas { display: block; }
+
+/* 便利店：原本是冷白日光灯，压暗才和整片统一 */
+.s-shop { filter: contrast(1.12) saturate(.7) brightness(.66) !important; }
+
+/* 社区医院同理 */
+.s-clinic { filter: contrast(1.1) saturate(.6) brightness(.82) !important; }
 
 </style>
 </head>
@@ -6019,11 +6021,398 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
   };
 
   /* 场景 → 画法 */
+  /* ============================================================
+     301 室 · 林砚的房间（第一批）
+     ============================================================ */
+  D.room301 = function (host) {
+    mount(host, function (illo) {
+      new Zdog.Rect({
+        addTo: illo, width: 430, height: 260,
+        translate: { y: 100, z: -40 }, rotate: { x: Zdog.TAU / 4 },
+        fill: true, color: C.floor, stroke: 1
+      });
+      new Zdog.Rect({
+        addTo: illo, width: 430, height: 215,
+        translate: { y: -4, z: -128 }, fill: true, color: '#1c1813', stroke: 1
+      });
+
+      /* 大窗（左中） */
+      const win = new Zdog.Anchor({ addTo: illo, translate: { x: -78, y: -18, z: -126 } });
+      new Zdog.Rect({ addTo: win, width: 148, height: 116, fill: true, color: '#101a24', stroke: 3 });
+      // 十字窗格
+      new Zdog.Rect({ addTo: win, width: 4, height: 116, fill: true, color: '#171310', stroke: 0 });
+      new Zdog.Rect({ addTo: win, width: 148, height: 4, fill: true, color: '#171310', stroke: 0 });
+      // 窗台
+      new Zdog.Box({
+        addTo: win, width: 156, height: 6, depth: 14,
+        translate: { y: 62, z: 8 }, color: '#2a231a', stroke: 1
+      });
+
+      /* 矮桌（窗下） */
+      const desk = new Zdog.Anchor({ addTo: illo, translate: { x: -70, y: 78, z: 20 } });
+      new Zdog.Box({
+        addTo: desk, width: 128, height: 7, depth: 58,
+        color: C.wood, leftFace: C.woodDark, rightFace: C.woodDark,
+        topFace: C.wood, bottomFace: C.woodDark,
+        frontFace: C.wood, rearFace: C.woodDark, stroke: 1
+      });
+      [[-54, -22], [54, -22], [-54, 22], [54, 22]].forEach(function (p) {
+        new Zdog.Box({
+          addTo: desk, width: 6, height: 22, depth: 6,
+          translate: { x: p[0], y: 14, z: p[1] }, color: C.woodDark, stroke: 1
+        });
+      });
+      // 台灯
+      new Zdog.Cylinder({
+        addTo: desk, diameter: 8, length: 22,
+        translate: { x: -34, y: -16, z: 4 }, color: C.metal,
+        frontFace: C.metalDark, backface: C.metalDark, stroke: 1
+      });
+      new Zdog.Cone({
+        addTo: desk, diameter: 26, length: 15,
+        translate: { x: -34, y: -31, z: 4 }, color: '#6b5a3e', backface: '#3a3020', stroke: 1
+      });
+      // 桌上的本子
+      new Zdog.Box({
+        addTo: desk, width: 26, height: 3, depth: 18,
+        translate: { x: 16, y: -5, z: 2 }, rotate: { y: 0.18 },
+        color: '#8a8270',
+        leftFace: '#5a5444', rightFace: '#5a5444',
+        topFace: '#9a9280', bottomFace: '#4a4436',
+        frontFace: '#7a7260', rearFace: '#4a4436', stroke: 1
+      });
+
+      /* 铁架床（右） */
+      const bed = new Zdog.Anchor({ addTo: illo, translate: { x: 118, y: 76, z: 6 } });
+      // 床板
+      new Zdog.Box({
+        addTo: bed, width: 84, height: 8, depth: 132,
+        color: '#3a3128', leftFace: '#241d16', rightFace: '#241d16',
+        topFace: '#4a4034', bottomFace: '#241d16',
+        frontFace: '#3a3128', rearFace: '#241d16', stroke: 1
+      });
+      // 四根铁腿
+      [[-38, -62], [38, -62], [-38, 62], [38, 62]].forEach(function (p) {
+        new Zdog.Box({
+          addTo: bed, width: 5, height: 20, depth: 5,
+          translate: { x: p[0], y: 14, z: p[1] }, color: '#2a2620', stroke: 1
+        });
+      });
+      // 床垫
+      new Zdog.Box({
+        addTo: bed, width: 78, height: 12, depth: 124,
+        translate: { y: -10 },
+        color: '#4a4436', leftFace: '#2e2a20', rightFace: '#2e2a20',
+        topFace: '#5a5444', bottomFace: '#2e2a20',
+        frontFace: '#4a4436', rearFace: '#2e2a20', stroke: 1
+      });
+
+      /* 木门（最右） */
+      new Zdog.Box({
+        addTo: illo, width: 56, height: 128, depth: 10,
+        translate: { x: 196, y: -12, z: -120 },
+        color: '#2e251b', leftFace: '#1c1610', rightFace: '#1c1610',
+        topFace: '#3a3025', bottomFace: '#1c1610',
+        frontFace: '#332a1e', rearFace: '#1c1610', stroke: 1
+      });
+
+      illo.rotate = { x: -0.12, y: -0.18 };
+      illo.translate = { y: -2 };
+    }, { zoom: 1.2 });
+  };
+
+  /* ============================================================
+     陈慧兰家（第一批）
+     ============================================================ */
+  D.home = function (host) {
+    mount(host, function (illo) {
+      new Zdog.Rect({
+        addTo: illo, width: 430, height: 250,
+        translate: { y: 100, z: -40 }, rotate: { x: Zdog.TAU / 4 },
+        fill: true, color: '#15120e', stroke: 1
+      });
+      new Zdog.Rect({
+        addTo: illo, width: 430, height: 210,
+        translate: { y: -2, z: -126 }, fill: true, color: '#1e1a14', stroke: 1
+      });
+
+      /* 吊灯 */
+      new Zdog.Cylinder({
+        addTo: illo, diameter: 2, length: 60,
+        translate: { y: -92, z: -20 }, color: '#2a2620',
+        frontFace: '#2a2620', backface: '#2a2620', stroke: 0
+      });
+      new Zdog.Cylinder({
+        addTo: illo, diameter: 18, length: 16,
+        translate: { y: -58, z: -20 },
+        color: '#8a7a54', frontFace: '#6a5a3e', backface: '#4a4030', stroke: 1
+      });
+
+      /* 旧饭桌（中） */
+      const t = new Zdog.Anchor({ addTo: illo, translate: { x: -6, y: 76, z: 10 } });
+      new Zdog.Box({
+        addTo: t, width: 156, height: 8, depth: 88,
+        color: C.wood, leftFace: C.woodDark, rightFace: C.woodDark,
+        topFace: C.wood, bottomFace: C.woodDark,
+        frontFace: C.wood, rearFace: C.woodDark, stroke: 1
+      });
+      [[-66, -34], [66, -34], [-66, 34], [66, 34]].forEach(function (p) {
+        new Zdog.Box({
+          addTo: t, width: 8, height: 26, depth: 8,
+          translate: { x: p[0], y: 17, z: p[1] }, color: C.woodDark, stroke: 1
+        });
+      });
+      // 两副碗筷
+      [[-34, 0], [34, 0]].forEach(function (p) {
+        new Zdog.Cylinder({
+          addTo: t, diameter: 20, length: 7,
+          translate: { x: p[0], y: -8, z: p[1] },
+          rotate: { x: Zdog.TAU / 4 },
+          color: '#b0a894', frontFace: '#8a8270', backface: '#6a6252', stroke: 1
+        });
+      });
+      // 一盘菜
+      new Zdog.Cylinder({
+        addTo: t, diameter: 34, length: 6,
+        translate: { y: -7, z: -22 }, rotate: { x: Zdog.TAU / 4 },
+        color: '#9a927e', frontFace: '#7a7260', backface: '#5a5444', stroke: 1
+      });
+
+      /* 柜子（右） */
+      const cab = new Zdog.Anchor({ addTo: illo, translate: { x: 128, y: 50, z: -30 } });
+      new Zdog.Box({
+        addTo: cab, width: 88, height: 96, depth: 46,
+        color: C.wood, leftFace: C.woodDark, rightFace: C.woodDark,
+        topFace: C.wood, bottomFace: C.woodDark,
+        frontFace: C.wood, rearFace: C.woodDark, stroke: 1
+      });
+      // 三个药瓶
+      [[-24, -56], [-4, -58], [16, -55]].forEach(function (p, i) {
+        new Zdog.Cylinder({
+          addTo: cab, diameter: 12, length: 16 + i * 2,
+          translate: { x: p[0], y: p[1], z: 0 },
+          color: '#6a5a46', frontFace: '#8a7a5c', backface: '#4a3f30', stroke: 1
+        });
+      });
+
+      /* 锁着的门（左后） */
+      new Zdog.Box({
+        addTo: illo, width: 54, height: 122, depth: 9,
+        translate: { x: -168, y: -10, z: -118 },
+        color: '#2a2118', leftFace: '#1a140e', rightFace: '#1a140e',
+        topFace: '#332a1e', bottomFace: '#1a140e',
+        frontFace: '#2e251b', rearFace: '#1a140e', stroke: 1
+      });
+      // 门上的锁
+      new Zdog.Box({
+        addTo: illo, width: 10, height: 10, depth: 4,
+        translate: { x: -146, y: 0, z: -110 },
+        color: '#6a6252', stroke: 1
+      });
+
+      illo.rotate = { x: -0.1, y: -0.12 };
+      illo.translate = { y: -4 };
+    }, { zoom: 1.2 });
+  };
+
+  /* ============================================================
+     便利店（第一批）
+     ============================================================ */
+  D.shop = function (host) {
+    mount(host, function (illo) {
+      new Zdog.Rect({
+        addTo: illo, width: 440, height: 260,
+        translate: { y: 100, z: -40 }, rotate: { x: Zdog.TAU / 4 },
+        fill: true, color: '#171718', stroke: 1
+      });
+      new Zdog.Rect({
+        addTo: illo, width: 440, height: 220,
+        translate: { y: -4, z: -128 }, fill: true, color: '#202024', stroke: 1
+      });
+
+      /* 两组货架 */
+      [[-120, 0], [-40, 0]].forEach(function (p) {
+        const s = new Zdog.Anchor({ addTo: illo, translate: { x: p[0], y: 60, z: -10 } });
+        // 四根立柱
+        [[-40, -46], [40, -46], [-40, 46], [40, 46]].forEach(function (q) {
+          new Zdog.Box({
+            addTo: s, width: 4, height: 88, depth: 4,
+            translate: { x: q[0], y: 0, z: q[1] }, color: '#33332e', stroke: 1
+          });
+        });
+        // 三层隔板
+        [-32, 0, 32].forEach(function (y) {
+          new Zdog.Box({
+            addTo: s, width: 86, height: 3, depth: 96,
+            translate: { y: y },
+            color: '#3f3f38', leftFace: '#262622', rightFace: '#262622',
+            topFace: '#4a4a42', bottomFace: '#262622',
+            frontFace: '#3f3f38', rearFace: '#262622', stroke: 1
+          });
+        });
+        // 摆几箱货
+        [[-28, -30, 22], [0, -30, 28], [26, -30, 20]].forEach(function (g) {
+          new Zdog.Box({
+            addTo: s, width: g[2], height: 18, depth: 16,
+            translate: { x: g[0], y: g[1], z: 0 },
+            color: '#5a5244', leftFace: '#33302a', rightFace: '#33302a',
+            topFace: '#6a6252', bottomFace: '#33302a',
+            frontFace: '#5a5244', rearFace: '#33302a', stroke: 1
+          });
+        });
+      });
+
+      /* 收银台（右前） */
+      const cnt = new Zdog.Anchor({ addTo: illo, translate: { x: 96, y: 70, z: 46 } });
+      new Zdog.Box({
+        addTo: cnt, width: 120, height: 62, depth: 54,
+        color: '#3a3a34', leftFace: '#22221f', rightFace: '#22221f',
+        topFace: '#4a4a42', bottomFace: '#22221f',
+        frontFace: '#3a3a34', rearFace: '#22221f', stroke: 1
+      });
+      // 收银机
+      new Zdog.Box({
+        addTo: cnt, width: 40, height: 22, depth: 30,
+        translate: { x: -20, y: -42, z: 0 },
+        color: '#2e2e29', leftFace: '#1c1c19', rightFace: '#1c1c19',
+        topFace: '#3f3f38', bottomFace: '#1c1c19',
+        frontFace: '#2e2e29', rearFace: '#1c1c19', stroke: 1
+      });
+      // 台面上的账本
+      new Zdog.Box({
+        addTo: cnt, width: 26, height: 4, depth: 20,
+        translate: { x: 26, y: -33, z: 6 }, rotate: { y: -0.2 },
+        color: '#7a6a52', leftFace: '#4a3f30', rightFace: '#4a3f30',
+        topFace: '#8a7a5c', bottomFace: '#4a3f30',
+        frontFace: '#7a6a52', rearFace: '#4a3f30', stroke: 1
+      });
+
+      /* 冰柜（后墙） */
+      new Zdog.Box({
+        addTo: illo, width: 120, height: 86, depth: 46,
+        translate: { x: 130, y: 14, z: -96 },
+        color: '#2a3236', leftFace: '#1a2024', rightFace: '#1a2024',
+        topFace: '#3a444a', bottomFace: '#1a2024',
+        frontFace: '#33404a', rearFace: '#1a2024', stroke: 1
+      });
+
+      illo.rotate = { x: -0.12, y: 0.16 };
+      illo.translate = { y: -2 };
+    }, { zoom: 1.2 });
+  };
+
+  /* ============================================================
+     社区医院（第一批）
+     ============================================================ */
+  D.clinic = function (host) {
+    mount(host, function (illo) {
+      new Zdog.Rect({
+        addTo: illo, width: 440, height: 258,
+        translate: { y: 100, z: -40 }, rotate: { x: Zdog.TAU / 4 },
+        fill: true, color: '#181a1b', stroke: 1
+      });
+      new Zdog.Rect({
+        addTo: illo, width: 440, height: 218,
+        translate: { y: -4, z: -128 }, fill: true, color: '#22262a', stroke: 1
+      });
+
+      /* 塑料长椅（左） */
+      const bench = new Zdog.Anchor({ addTo: illo, translate: { x: -110, y: 76, z: 16 } });
+      new Zdog.Box({
+        addTo: bench, width: 130, height: 8, depth: 46,
+        color: '#3a4a50', leftFace: '#243036', rightFace: '#243036',
+        topFace: '#4a5c64', bottomFace: '#243036',
+        frontFace: '#3a4a50', rearFace: '#243036', stroke: 1
+      });
+      // 靠背
+      new Zdog.Box({
+        addTo: bench, width: 130, height: 34, depth: 7,
+        translate: { y: -22, z: -22 },
+        color: '#33434a', leftFace: '#243036', rightFace: '#243036',
+        topFace: '#44545c', bottomFace: '#243036',
+        frontFace: '#3a4a50', rearFace: '#243036', stroke: 1
+      });
+      // 腿
+      [[-54, 14], [54, 14]].forEach(function (p) {
+        new Zdog.Box({
+          addTo: bench, width: 6, height: 26, depth: 6,
+          translate: { x: p[0], y: 17, z: p[1] }, color: '#2a3438', stroke: 1
+        });
+      });
+      // 第二个位子
+      new Zdog.Box({
+        addTo: bench, width: 4, height: 26, depth: 46,
+        translate: { x: 0, y: 0, z: 0 }, color: '#26343a', stroke: 0
+      });
+
+      /* 护士站柜台（右） */
+      const desk = new Zdog.Anchor({ addTo: illo, translate: { x: 104, y: 68, z: 30 } });
+      new Zdog.Box({
+        addTo: desk, width: 130, height: 58, depth: 50,
+        color: '#3a4044', leftFace: '#242a2e', rightFace: '#242a2e',
+        topFace: '#4a5258', bottomFace: '#242a2e',
+        frontFace: '#3a4044', rearFace: '#242a2e', stroke: 1
+      });
+      // 台面上的病历夹
+      new Zdog.Box({
+        addTo: desk, width: 30, height: 4, depth: 22,
+        translate: { x: -22, y: -31, z: 0 }, rotate: { y: 0.22 },
+        color: '#8a8272', leftFace: '#5a5444', rightFace: '#5a5444',
+        topFace: '#9a9280', bottomFace: '#5a5444',
+        frontFace: '#8a8272', rearFace: '#5a5444', stroke: 1
+      });
+      // 笔筒
+      new Zdog.Cylinder({
+        addTo: desk, diameter: 12, length: 16,
+        translate: { x: 26, y: -37, z: 4 },
+        color: '#2e3438', frontFace: '#3f484e', backface: '#242a2e', stroke: 1
+      });
+
+      /* 药柜（后墙） */
+      const med = new Zdog.Anchor({ addTo: illo, translate: { x: 138, y: 20, z: -104 } });
+      new Zdog.Box({
+        addTo: med, width: 84, height: 110, depth: 34,
+        color: '#2a3034', leftFace: '#1a1e22', rightFace: '#1a1e22',
+        topFace: '#343a3e', bottomFace: '#1a1e22',
+        frontFace: '#2e363a', rearFace: '#1a1e22', stroke: 1
+      });
+      // 分格
+      [-30, 0, 30].forEach(function (y) {
+        new Zdog.Box({
+          addTo: med, width: 76, height: 2, depth: 2,
+          translate: { y: y, z: 17 }, color: '#4a5458', stroke: 0
+        });
+      });
+
+      /* 走廊尽头的门（中后） */
+      new Zdog.Box({
+        addTo: illo, width: 62, height: 120, depth: 8,
+        translate: { x: -6, y: -12, z: -124 },
+        color: '#2e3438', leftFace: '#1c2024', rightFace: '#1c2024',
+        topFace: '#3a4248', bottomFace: '#1c2024',
+        frontFace: '#32393e', rearFace: '#1c2024', stroke: 1
+      });
+      // 门下漏出的白光
+      new Zdog.Box({
+        addTo: illo, width: 58, height: 3, depth: 3,
+        translate: { x: -6, y: 49, z: -120 },
+        color: '#cfe0ea', stroke: 0
+      });
+
+      illo.rotate = { x: -0.08, y: -0.14 };
+      illo.translate = { y: -2 };
+    }, { zoom: 1.2 });
+  };
+
   const MAP = {
     oldinside: D.room302,
     b1: D.basement,
     r402: D.room402,
-    yard: D.yard
+    yard: D.yard,
+    room: D.room301,
+    home: D.home,
+    shop: D.shop,
+    clinic: D.clinic
   };
 
   D.mount = function (sceneId, host) {
@@ -6033,9 +6422,18 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
     // 清掉旧 canvas
     const old = host.querySelectorAll('canvas.zd');
     old.forEach(function (n) { n.remove(); });
+    // 每个场景自己的明暗，别和 CSS 底打架
+    const TONE = {
+      room: 0.95, home: 1.2, shop: 0.95, clinic: 0.9,
+      oldinside: 0.95, b1: 0.9, r402: 0.95, yard: 0.95
+    };
+    const tone = TONE[sceneId] === undefined ? 0.9 : TONE[sceneId];
+
     const wrap = document.createElement('div');
     wrap.className = 'zd-wrap';
-    wrap.style.cssText = 'position:absolute;inset:0;z-index:3;pointer-events:none';
+    wrap.style.cssText =
+      'position:absolute;inset:0;z-index:3;pointer-events:none;' +
+      'filter:brightness(' + tone + ') contrast(1.06) saturate(.85)';
     host.appendChild(wrap);
     fn(wrap);
     const cv = wrap.querySelector('canvas');
