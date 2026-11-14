@@ -1698,6 +1698,53 @@ html, body {
   filter: blur(calc(var(--u) * 0.24));
 }
 
+/* ============================================================
+   302 室内 · 案发房间
+   沙发 / 茶几 / 烟灰缸 / 床头柜 / 后窗
+   ============================================================ */
+.s-oldhouse .sofa302 {
+  position:absolute; left:11%; top:43%; width:28%; height:22%;
+  border-radius: 6px 6px 3px 3px;
+  box-shadow: inset 0 -12px 22px rgba(0,0,0,.6), 0 8px 18px rgba(0,0,0,.7);
+  filter: brightness(.55);
+}
+.s-oldhouse .sofa302::after {
+  content:""; position:absolute; left:8%; right:8%; top:18%; height:26%;
+  background: rgba(0,0,0,.35); border-radius:3px;
+}
+.s-oldhouse .tea302 {
+  position:absolute; left:40%; top:50%; width:23%; height:19%;
+  border-radius: 2px;
+  box-shadow: 0 6px 0 rgba(0,0,0,.55), 0 10px 22px rgba(0,0,0,.7);
+  filter: brightness(.62);
+}
+.s-oldhouse .tea302::after {
+  content:""; position:absolute; right:0; bottom:0; width:9%; height:12%;
+  background: radial-gradient(circle at 50% 50%, rgba(120,20,14,.75), transparent 72%);
+  filter: blur(1px);
+}
+.s-oldhouse .ash302 {
+  position:absolute; left:64%; top:52%; width:9%; height:9%;
+  border-radius:50%;
+  background: radial-gradient(circle at 50% 45%, rgba(150,145,135,.5), rgba(60,58,52,.7) 62%, transparent 80%);
+  box-shadow: 0 2px 6px rgba(0,0,0,.7);
+}
+.s-oldhouse .stand302 {
+  position:absolute; left:76%; top:56%; width:14%; height:17%;
+  border-radius:2px;
+  box-shadow: 0 5px 0 rgba(0,0,0,.6), 0 8px 18px rgba(0,0,0,.62);
+  filter: brightness(.6);
+}
+.s-oldhouse .bwin302 {
+  position:absolute; left:86%; top:24%; width:12%; height:26%;
+  background: linear-gradient(180deg, #101820 0%, #0a0f14 100%);
+  border: calc(var(--u)*.5) solid #0a0908;
+  box-shadow: 0 0 calc(var(--u)*2.4) rgba(120,150,180,.12);
+}
+.s-oldhouse .bwin302::after {
+  content:""; position:absolute; left:50%; top:0; width:2px; height:100%; background:#0a0908;
+}
+
 </style>
 <style>
 /* cine.css */
@@ -5617,6 +5664,102 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
 
 </script>
 <script>
+/* evidence.js */
+/* ============================================================
+   evidence.js · 十六件物证
+   玩家在场景里点到的东西，不是别人告诉他的
+   ============================================================ */
+(function (root) {
+  'use strict';
+
+  const EVIDENCE = [
+    {
+      id: 'E-01', name: '兔子发卡', scene: 'r402', owner: '苏晚',
+      after: '门内缝·塑料兔子',
+      text: '声控灯不亮，三楼走廊靠手电走。\n发卡躺在门内地砖缝里，塑料兔子一只耳朵朝上，另一只断在缝中。\n苏晚的手从光里缩回去，指甲缝里嵌着泥。'
+    },
+    {
+      id: 'E-02', name: '铁皮盒子', scene: 'r402', owner: '苏晚',
+      after: '铁盒·十四年前',
+      text: '盒盖沿锈住，指甲抠三下才掀开。\n手电光落进去：什么都没有。\n底部一圈圆形压痕，放过什么东西，放了很久。'
+    },
+    {
+      id: 'E-03', name: '空药袋', scene: 'i302', owner: '张敬尧',
+      after: '六格空三·剪口齐',
+      text: '六格铝塑板空了三格，剩下三格铝膜没破。\n床头灯是暖黄的，撕口齐得像剪的，不是手指撕的。\n指印压在「地西泮片」三个字上，很轻，只剩指纹的边。'
+    },
+    {
+      id: 'E-04', name: '茶几角上的血', scene: 'i302', owner: '陈慧兰',
+      after: '玻璃崩角·两色发',
+      text: '茶几角是玻璃的，直角，崩掉一小块。\n血从崩口往里渗，颜色比周围深。\n蹲下去，手背贴了贴崩口，是凉的。'
+    },
+    {
+      id: 'E-05', name: '烧过的底片', scene: 'i302', owner: '陈慧兰',
+      after: '烟灰缸·残卷透光',
+      text: '烟灰缸底粘着一层黑卷，边缘蜷起，能透光。\n手电从下往上照，黑卷里显出一道白边的窗框。\n烧剩的一角没化，指甲刮一下，落在报纸上。'
+    },
+    {
+      id: 'E-06', name: '水果刀', scene: 'i302', owner: '陈慧兰 / 苏晚',
+      after: '木柄单刃·中段亮',
+      text: '刀是厨房那把，木柄，柄尾裂了一线。\n刀刃中段一道擦痕，亮得反光，两头还是暗的。\n手指捏着柄尾提起来，刀尖滴水。'
+    },
+    {
+      id: 'E-07', name: '后窗脚印', scene: 'i302', owner: '赵彪',
+      after: '窗台灰·半枚跟印',
+      text: '后窗台落一层灰，灰上半个鞋跟印，斜着。\n窗框下沿的铁锈被蹭掉一道。\n手电从院里往上打，印子边上有一小块湿的，按了按，没干。'
+    },
+    {
+      id: 'E-08', name: '鞋印拓片', scene: 'b1', owner: '周守义',
+      after: '胶鞋横纹·边上湿',
+      text: '一张旧报纸，压在土上，压出横条底纹。\n六个鞋印，六个方向，边上都带一圈水。\n收起来时纸破了，土从破口漏下去。'
+    },
+    {
+      id: 'E-09', name: '刘芳的账本', scene: 'shop', owner: '刘芳',
+      after: '末页停笔·十九点',
+      text: '塑料皮封面，摊在柜台上，纸页受潮，字洇开。\n手电光顺着一行行往下移，末页写着「望安公寓 302 十九点」。\n笔尖停在那个「点」字上，压出一团墨，还没干透。'
+    },
+    {
+      id: 'E-10', name: '转账记录', scene: 'clinic', owner: '夏晓',
+      after: '夹层小票·晚一天',
+      text: '小票卷成一卷，塞在抽屉夹层里。\n手电照到打印字：日期比转账晚一天，金额后面两个零被指甲掐过。\n指甲印是弧的，一个，不是两个。'
+    },
+    {
+      id: 'E-11', name: '录像备份', scene: 'attic', owner: '阿哲',
+      after: 'SD卡·21:21',
+      text: '卡比指甲盖小，托在掌心，反面用圆珠笔写了个「三」。\n屏幕的光打在手上，进度条走到 21:21 停住。\n画面里是后窗，窗框中段跨着一只手，五指张开。'
+    },
+    {
+      id: 'E-12', name: '借条', scene: 'archive', owner: '苏卫国 / 林建军',
+      after: '砖下纸·三指印',
+      text: '借条压在一块砖下，纸边发黄，写着两个人的名字和一笔数。\n手电贴着纸面扫，指印压在最末一个字上，三个指，不是五个。\n纸背有一道折痕，折过两次。'
+    },
+    {
+      id: 'E-13', name: '十四年前的编织袋', scene: 'b1', owner: '周守义',
+      after: '尼龙绳死结·灰痕',
+      text: '袋子在最里侧，袋口用尼龙绳扎了两道，绳头打了死结。\n手电照下去，袋身上的字掉了漆，只剩半个「档」字。\n袋子被拖出过，地上留一道灰痕，灰痕到门口就断了。'
+    },
+    {
+      id: 'E-14', name: '稀料桶', scene: 'b1', owner: '周守义',
+      after: '桶口缝·粉笔白影',
+      text: '铁桶高过膝盖，盖子没扣严，缝里透出一线亮。\n手电从桶口斜照，液面浮一层薄光。\n一根断尼龙绳沉在底下。\n手伸过去，指头在桶口停住，没碰。'
+    },
+    {
+      id: 'E-15', name: '槐树下的土', scene: 'yard', owner: '周守义',
+      after: '新土浅色·绳头埋',
+      text: '土被翻过，又踩平，颜色比旁边浅一层。\n手电扫过去，土面一根断绳头，朝下埋着。\n扒开两捧，指尖碰到铁的凉，土从指缝里落回原处。'
+    },
+    {
+      id: 'E-16', name: '编号牌', scene: 'funeral', owner: '孙强',
+      after: '铜牌撬痕·苏家物',
+      text: '铜牌比火柴盒小，正面凹字还看得清。\n手电压在铜面上，反出一小块亮斑，斑里映着半张脸。\n牌子边缘一道撬痕，是掰下来的。'
+    }
+  ];
+
+  root.EVIDENCE = EVIDENCE;
+})(typeof self !== 'undefined' ? self : this);
+
+</script>
+<script>
 /* seed.js */
 /* ============================================================
    seed.js · 世界的铸造机（UMD：Node 与浏览器共用同一份实现）
@@ -6738,48 +6881,111 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
   S2.oldinside = {
     title: '望安公寓 · 302 室内',
     cls: 's-oldhouse',
-    layer: () =>
-      '<div class="lyr far"></div>' +
-      '<div class="dust"></div>' +
-      '<div class="lyr near"></div>',
+    layer: function () {
+      var wood = window.TEX ? window.TEX.get('wood') : 'none';
+      var cloth = window.TEX ? window.TEX.get('cloth') : 'none';
+      return (
+        '<div class="lyr far"></div>' +
+        '<div class="sofa302" style="background-image:' + cloth + ';background-size:60% 60%"></div>' +
+        '<div class="tea302" style="background-image:' + wood + ';background-size:120% 120%"></div>' +
+        '<div class="ash302"></div>' +
+        '<div class="stand302" style="background-image:' + wood + ';background-size:100% 100%"></div>' +
+        '<div class="bwin302"></div>' +
+        '<div class="dust"></div>' +
+        '<div class="lyr near"></div>'
+      );
+    },
     hotspots: [
       {
-        id: 'bed2',
-        label: '床',
-        rect: [10, 52, 26, 16],
-        run: () => ({ text: '床板上还有一层旧床单。\n中间有一块塌下去的地方。\n你伸手按了按，还是软的。', cost: 14 })
+        id: 'sofa302',
+        label: '沙发',
+        rect: [12, 44, 26, 20],
+        run: () => ({ text: '沙发是旧的，深色布面，中间塌下去一块。\n塌的地方比周围干净——被人擦过。\n坐垫缝里卡着一小片纸，指甲盖大小。', cost: 12 })
       },
       {
-        id: 'drawer',
-        label: '抽屉',
-        rect: [44, 54, 14, 14],
+        id: 'table302',
+        label: '茶几',
+        rect: [40, 50, 22, 18],
         run: (S) => {
-          if (!S.flags.foundDrawer) {
-            S.flags.foundDrawer = true;
+          if (!S.flags.sawTable302) {
+            S.flags.sawTable302 = true;
             return {
-              text: '抽屉里有一把小刀，刀柄上缠着布。\n布已经硬了。\n刀下面压着一张纸，上面只有一个地址：望安公寓。',
-              cost: 20
+              text: '茶几角是玻璃的，直角，崩掉一小块。\n血从崩口往里渗，颜色比周围深。\n蹲下去，手背贴了贴崩口，是凉的。',
+              cost: 14,
+              clue: 'E-04'
             };
           }
-          return { text: '刀还在。你没敢碰第二次。', cost: 6 };
+          return { text: '崩口还在。\n血已经黑透了。', cost: 6 };
         }
       },
       {
-        id: 'mirror2',
-        label: '镜子',
-        rect: [64, 24, 12, 22],
-        run: () => ({ text: '镜子裂了，从中间。\n你在裂缝里看见自己，分成了两半。', cost: 10 })
+        id: 'ashtray302',
+        label: '烟灰缸',
+        rect: [64, 52, 10, 10],
+        run: (S) => {
+          if (!S.flags.sawAsh) {
+            S.flags.sawAsh = true;
+            return {
+              text: '烟灰缸底粘着一层黑卷，边缘蜷起，能透光。\n手电从下往上照，黑卷里显出一道白边的窗框。\n烧剩的一角没化，指甲刮一下，落在报纸上。',
+              cost: 16,
+              clue: 'E-05'
+            };
+          }
+          return { text: '黑卷还在缸底。\n碰一下就碎。', cost: 6 };
+        }
       },
       {
-        id: 'window4',
-        label: '窗',
-        rect: [78, 22, 14, 26],
-        run: () => ({ text: '从这儿能看见对面楼。\n那扇一直亮着的窗，今天灭了。', cost: 8 })
+        id: 'knife302',
+        label: '地上的刀',
+        rect: [40, 70, 12, 9],
+        run: (S) => {
+          if (!S.flags.sawKnife) {
+            S.flags.sawKnife = true;
+            return {
+              text: '刀是厨房那把，木柄，柄尾裂了一线。\n刀刃中段一道擦痕，亮得反光，两头还是暗的。\n手指捏着柄尾提起来，刀尖滴水。',
+              cost: 18,
+              clue: 'E-06'
+            };
+          }
+          return { text: '刀还在原处。\n你不会去捡第二次。', cost: 6 };
+        }
+      },
+      {
+        id: 'pills302',
+        label: '床头柜',
+        rect: [76, 56, 14, 16],
+        run: (S) => {
+          if (!S.flags.sawPills) {
+            S.flags.sawPills = true;
+            return {
+              text: '六格铝塑板空了三格，剩下三格铝膜没破。\n床头灯是暖黄的，撕口齐得像剪的，不是手指撕的。\n指印压在「地西泮片」三个字上，很轻，只剩指纹的边。',
+              cost: 14,
+              clue: 'E-03'
+            };
+          }
+          return { text: '铝塑板还摊在床头柜上。\n六格，空三格。', cost: 6 };
+        }
+      },
+      {
+        id: 'backwin',
+        label: '后窗',
+        rect: [86, 26, 12, 24],
+        run: (S) => {
+          if (!S.flags.sawBackwin) {
+            S.flags.sawBackwin = true;
+            return {
+              text: '后窗台落一层灰，灰上半个鞋跟印，斜着。\n窗框下沿的铁锈被蹭掉一道。\n从这儿下去，二楼有雨棚。',
+              cost: 12,
+              clue: 'E-07'
+            };
+          }
+          return { text: '窗还开着一条缝。\n下面是院子。', cost: 5 };
+        }
       },
       {
         id: 'back',
         label: '出去',
-        rect: [4, 34, 8, 28],
+        rect: [2, 34, 7, 28],
         run: () => ({ text: '你回到走廊。', cost: 4, go: 'oldhouse' })
       }
     ]
@@ -8267,9 +8473,9 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
         g.fill({ color: 0x93aac2, alpha: 0.018 + Math.random() * 0.03 });
         p = { s: g, vx: 5 + Math.random() * 13, vy: -1.5 - Math.random() * 4 };
       } else if (kind === 'glow') {
-        const r = 36 + Math.random() * 120;
+        const r = 22 + Math.random() * 56;
         g.circle(0, 0, r);
-        g.fill({ color: 0xffd9a0, alpha: 0.014 + Math.random() * 0.028 });
+        g.fill({ color: 0xffd9a0, alpha: 0.008 + Math.random() * 0.014 });
         p = { s: g, vx: (Math.random() - 0.5) * 7, vy: (Math.random() - 0.5) * 5 };
       } else {
         const r = 0.5 + Math.random() * 1.5;
@@ -8332,7 +8538,7 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
     forScene(id) {
       if (id === 'street' || id === 'river' || id === 'market') return 'rain';
       if (id === 'shop' || id === 'funeral') return 'fog';
-      if (id === 'hall' || id === 'oldhouse' || id === 'oldinside') return 'glow';
+      if (id === 'hall' || id === 'oldhouse') return 'glow';
       return 'dust';
     },
 
@@ -8347,7 +8553,7 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
       this.kind = kind;
       this.parts.forEach((p) => p.s.destroy());
       this.parts = [];
-      const n = kind === 'rain' ? 170 : kind === 'fog' ? 15 : kind === 'glow' ? 13 : 95;
+      const n = kind === 'rain' ? 170 : kind === 'fog' ? 15 : kind === 'glow' ? 7 : 95;
       for (let i = 0; i < n; i++) this.make(kind);
       this.drawBeams(this.sceneId);
     },
@@ -8481,6 +8687,7 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
 
   /* 哪件东西藏着哪枚线索 */
   const CLUE_OF = { note: 4, phone: 3, bag: 9, third: 2, board: 1, pills: 5, locked: 11 };
+  const TOTAL_EV = 16;
 
   const S = {
     life: LIFE,
@@ -8905,15 +9112,27 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
       } catch (e) {}
     }
 
-    // 线索
+    // 线索 / 物证
     const cid = CLUE_OF[hs.id];
     if (cid && S.clues.indexOf(cid) < 0) {
       S.clues.push(cid);
       const sec = CITY.SECRETS.find((x) => x.id === cid);
       window.SFX.hit('heart');
       await sleep(260);
-      await narrate('【线索 ' + S.clues.length + '/12】' + sec.text + '\n—— ' + sec.owner);
+      await narrate('【线索 ' + S.clues.length + '/' + TOTAL_EV + '】' + sec.text + '\n—— ' + sec.owner);
       if (window.MUSIC) window.MUSIC.duck(2);
+    }
+
+    // 物证：href.hotspot 直接给 E-xx
+    if (res.clue && String(res.clue).indexOf('E-') === 0 && S.clues.indexOf(res.clue) < 0) {
+      S.clues.push(res.clue);
+      const ev = (window.EVIDENCE || []).find((x) => x.id === res.clue);
+      window.SFX.hit('heart');
+      if (window.MUSIC) window.MUSIC.duck(2.4);
+      await sleep(300);
+      if (ev) {
+        await narrate('【物证 ' + S.clues.length + '/' + TOTAL_EV + '】' + ev.name + '\n—— ' + ev.after);
+      }
     }
 
     // 能拿走的东西
@@ -9322,7 +9541,7 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
       }
 
       await clickLabel('窗');
-      await clickLabel('桌上的字条');
+      await clickLabel('桌上的本子');
       await clickLabel('背包');
       await clickLabel('手机');
       await clickLabel('门');
