@@ -5462,7 +5462,7 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
 <script>
 /* world.js */
 /* ============================================================
-   world.js · 临江三号院 · 第 0 天（可玩完整版）
+   world.js · 妄城三号院 · 第 0 天（可玩完整版）
    场景 / 热区 / 动作 全部在这里。改内容不用碰引擎。
    ------------------------------------------------------------
    hotspot.run(S) 返回：
@@ -5479,9 +5479,9 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
   }
 
   const SCENES = {
-    /* ================= 出租屋 ================= */
+    /* ================= 301 室 ================= */
     room: {
-      title: '出租屋 · 三号楼 402',
+      title: '望安公寓 · 301',
       cls: 's-room',
       layer: () =>
         '<div class="lyr mid">' +
@@ -5508,13 +5508,12 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
         },
         {
           id: 'note',
-          label: '桌上的字条',
+          label: '桌上的本子',
           rect: [24, 76, 18, 14],
           run: (S) => {
             S.flags.readNote = true;
-            if (/医院|三院/.test(S.life.note)) S.flags.knowHospital = true;
             return {
-              text: '「' + S.life.note + '」\n\n字是她的，最后一个字拖得很长。',
+              text: '一本翻烂的笔记本。\n最后一页只有一行字：「302。六个人。没有人开口。」\n字是你自己的，笔迹比现在用力。',
               cost: 5
             };
           }
@@ -5592,7 +5591,7 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
 
     /* ================= 走廊 ================= */
     hall: {
-      title: '三号楼 · 四层走廊',
+      title: '望安公寓 · 三楼走廊',
       cls: 's-hall',
       layer: () =>
         '<div class="lyr far"></div>' +
@@ -5677,7 +5676,7 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
 
     /* ================= 街道 ================= */
     street: {
-      title: '临江 · 三号院门口',
+      title: '妄城 · 望安路',
       cls: 's-street',
       layer: () =>
         '<div class="lyr far"></div>' +
@@ -5871,9 +5870,9 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
       ]
     },
 
-    /* ================= 母亲家 ================= */
+    /* ================= 陈慧兰家 ================= */
     home: {
-      title: '临江 · 老家属院 3 单元',
+      title: '陈慧兰家 · 城西',
       cls: 's-home',
       layer: () =>
         '<div class="lyr far"></div>' +
@@ -5980,7 +5979,7 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
      诊所
      ============================================================ */
   S2.clinic = {
-    title: '城关诊所 · 二层走廊',
+    title: '社区医院 · 二层走廊',
     cls: 's-clinic',
     layer: () =>
       '<div class="lyr far"></div>' +
@@ -6209,7 +6208,7 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
      旧宅
      ============================================================ */
   S2.oldhouse = {
-    title: '西街 17 号 · 那间屋',
+    title: '望安公寓 302 · 那间屋',
     cls: 's-oldhouse',
     layer: () =>
       '<div class="lyr far"></div>' +
@@ -6262,7 +6261,7 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
         id: 'out3',
         label: '离开',
         rect: [88, 34, 8, 28],
-        run: () => ({ text: '你退到街上。西街的灯坏了两年，一直没人修。', cost: 6, go: 'street' })
+        run: () => ({ text: '你退到街上。望安路的灯坏了两年，一直没人修。', cost: 6, go: 'street' })
       }
     ]
   };
@@ -6271,7 +6270,7 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
      旧宅 · 屋内
      ============================================================ */
   S2.oldinside = {
-    title: '西街 17 号 · 屋内',
+    title: '望安公寓 · 302 室内',
     cls: 's-oldhouse',
     layer: () =>
       '<div class="lyr far"></div>' +
@@ -6292,7 +6291,7 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
           if (!S.flags.foundDrawer) {
             S.flags.foundDrawer = true;
             return {
-              text: '抽屉里有一把小刀，刀柄上缠着布。\n布已经硬了。\n刀下面压着一张纸，上面只有一个地址：临江路 3 号。',
+              text: '抽屉里有一把小刀，刀柄上缠着布。\n布已经硬了。\n刀下面压着一张纸，上面只有一个地址：望安公寓。',
               cost: 20
             };
           }
@@ -6324,7 +6323,7 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
      江边
      ============================================================ */
   S2.river = {
-    title: '临江 · 堤岸',
+    title: '妄城 · 堤岸',
     cls: 's-river',
     layer: () =>
       '<div class="lyr far"></div>' +
@@ -6377,7 +6376,7 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
      菜市场
      ============================================================ */
   S2.market = {
-    title: '西门菜市场 · 雨棚下',
+    title: '望安路口菜市场 · 雨棚下',
     cls: 's-market',
     layer: () =>
       '<div class="lyr far"></div>' +
@@ -6394,7 +6393,7 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
           if (!S.flags.metVendor) {
             S.flags.metVendor = true;
             return {
-              text: '「今天不卖。」\n他正在收摊，手很快。\n你问他西街那件事，他停了。\n「你问这个干什么。」',
+              text: '「今天不卖。」\n他正在收摊，手很快。\n你问他望安路那件事，他停了。\n「你问这个干什么。」',
               cost: 12,
               voice: 'vendor'
             };
@@ -6490,7 +6489,7 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
 /* world3.js */
 /* ============================================================
    world3.js · 两个新住处
-   501 顶楼隔间（林小满） / 旧货铺二楼（周野）
+   503 室（林小满） / 负一楼杂物间（周野）
    ============================================================ */
 (function (root) {
   'use strict';
@@ -6498,10 +6497,10 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
   const S3 = {};
 
   /* ============================================================
-     501 顶楼隔间
+     503 室
      ============================================================ */
   S3.attic = {
-    title: '临江路 3 号 · 501 顶楼',
+    title: '望安公寓 · 503',
     cls: 's-attic',
     layer: () =>
       '<div class="lyr far"></div>' +
@@ -6520,13 +6519,13 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
         id: 'bed3',
         label: '床垫',
         rect: [8, 58, 26, 16],
-        run: () => ({ text: '床垫直接铺在地上，边上卷起来。\n你昨天连鞋都没脱。\n鞋还在床尾，一只朝天。', cost: 8 })
+        run: () => ({ text: '床垫直接铺在地上。\n三脚架还架在窗边，补光灯没关。\n昨晚你又拍了一夜。', cost: 8 })
       },
       {
         id: 'box2',
         label: '纸箱',
         rect: [36, 56, 14, 14],
-        run: () => ({ text: '三个纸箱，全是别人寄丢的件。\n最上面那个写着「退回」。\n你没打开过。', cost: 10 })
+        run: () => ({ text: '四个纸箱，全是硬盘和存储卡。\n最上面那个贴着标签：「后院 第41夜」。', cost: 10 })
       },
       {
         id: 'cooker',
@@ -6541,7 +6540,7 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
         run: (S) => {
           if (!S.flags.sawBox) {
             S.flags.sawBox = true;
-            return { text: '箱子里还压着一单没送出去的。\n地址是西街 17 号，收件人一栏写着「本人」。\n日期是三天前。', cost: 12 };
+            return { text: '包里是三脚架和两块电池。\n相机还开着，最后一段录像停在昨晚 23:47。\n镜头对着后院那棵树。', cost: 12 };
           }
           return { text: '那单还在里面。你没敢送。', cost: 5 };
         }
@@ -6550,7 +6549,7 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
         id: 'letter',
         label: '门缝里的信',
         rect: [88, 62, 9, 10],
-        run: () => ({ text: '一封没贴邮票的信，从门缝底下塞进来的。\n里面只有一张纸，写着一行字：\n「你妹妹那天，往哪边走的？」', cost: 14 })
+        run: () => ({ text: '一张纸从门缝底下塞进来。\n上面只有一行字：\n「你拍到的东西，别发出去。」', cost: 14 })
       },
       {
         id: 'out5',
@@ -6562,10 +6561,10 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
   };
 
   /* ============================================================
-     旧货铺二楼
+     负一楼杂物间
      ============================================================ */
   S3.shopup = {
-    title: '西门旧货铺 · 二楼',
+    title: '望安公寓 · 201',
     cls: 's-shopup',
     layer: () =>
       '<div class="lyr far"></div>' +
@@ -6590,7 +6589,7 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
         id: 'shelf2',
         label: '楼下货架顶',
         rect: [4, 56, 92, 14],
-        run: () => ({ text: '别人不要的东西，一件一件，都标了价。\n有一台旧收音机，标价十块。\n你昨天听了一晚上。', cost: 8 })
+        run: () => ({ text: '楼下是别人不要的东西，一件一件，都标了价。\n电风扇转得很慢。', cost: 8 })
       },
       {
         id: 'bed4',
@@ -6605,9 +6604,9 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
         run: (S) => {
           if (!S.flags.sawBox3) {
             S.flags.sawBox3 = true;
-            return { text: '箱子里是一沓旧照片。\n最上面那张，是三号院门口，四个人站成一排。\n其中一个是你。\n照片背面写着一个日期，十几年前的。', cost: 16 };
+            return { text: '箱子里全是硬盘，一块一块用橡皮筋捆着。\n最底下那块贴着标签：「删掉的」。', cost: 16 };
           }
-          return { text: '照片还在。你没敢翻第二遍。', cost: 6 };
+          return { text: '硬盘还在。你没敢插进去看。', cost: 6 };
         }
       },
       {
@@ -6617,7 +6616,7 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
         run: (S) => {
           if (!S.flags.metBoss3) {
             S.flags.metBoss3 = true;
-            return { text: '楼下有人喊：「楼上那个，下来搭把手。」\n你应了一声。\n他又喊：「算了，你歇着吧。」', cost: 10 };
+            return { text: '楼下有人喊：「阿哲！下来一趟。」\n是你叔。\n你没应。', cost: 10 };
           }
           return { text: '楼下没声音了。', cost: 4 };
         }
@@ -6626,7 +6625,7 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
         id: 'out6',
         label: '下楼',
         rect: [4, 34, 8, 26],
-        run: () => ({ text: '楼梯在货架后面，很陡。', cost: 6, go: 'market' })
+        run: () => ({ text: '楼梯很窄，走到一半灯就灭了。', cost: 6, go: 'market' })
       }
     ]
   };
@@ -6638,63 +6637,66 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
 <script>
 /* cast.js */
 /* ============================================================
-   cast.js · 三个年轻人
-   只有一个人母亲生病；三个人住在三个不同的屋子里。
+   cast.js · 望安公寓的三个年轻人
+   玩家随机落在其中一个身上 —— 不选，醒过来就是
    ============================================================ */
 (function (root) {
   'use strict';
 
   const CHARS = [
     {
-      id: 'chen',
-      name: '陈默',
+      id: 'lin',
+      name: '林砚',
       age: 24,
-      role: '夜班保安',
-      from: '临江 · 西街 17 号',
-      fromNote: '那间贴封条的屋子，是他小时候住过的',
+      role: '自由撰稿人',
+      from: '外地 · 不说是哪',
+      fromNote: '租房软件上写着「采风，写点老城的故事」',
       home: 'room',
-      homeName: '临江路 3 号 · 402',
+      homeName: '望安公寓 · 301',
       money: 200,
-      mother: 'sick',
-      family: '母亲一个人把他带大。她肺上有病，一直在吃药，药盒藏在柜子最里面。',
-      past: '三年前父亲走的那天，他在外地，没赶回来。',
-      flaw: '习惯性回避冲突',
-      line: '「妈那边……我明天去。」',
-      open: '第 1 天。\n你在出租屋醒来。\n窗外的雨下了七天。\n手机上有三个未接来电，都是凌晨打的。'
+      mother: 'away',
+      family: '父母在老家，一年打两次电话。他从不提自己在写什么。',
+      past: '虎口有旧茧，指甲剪得极短。那双手不常写字。',
+      flaw: '习惯性先看别人的手',
+      line: '「写故事的人，习惯问。」',
+      open:
+        '第 1 天。\n你在 301 醒来。\n窗对着后院，一棵老槐树的树冠压得很低，遮住半个窗。\n昨天下午四点搬进来的时候，雾还没上来。'
     },
     {
-      id: 'lin',
-      name: '林小满',
+      id: 'xu',
+      name: '许彤',
       age: 22,
-      role: '送外卖',
-      from: '江城 · 江边棚户',
-      fromNote: '坐火车过来，六个小时，一张站票',
+      role: '拍视频的',
+      from: '本地 · 城东',
+      fromNote: '在这栋楼住了两年，拍了两年的走廊',
       home: 'attic',
-      homeName: '临江路 3 号 · 501 顶楼隔间',
+      homeName: '望安公寓 · 503',
       money: 90,
       mother: 'away',
-      family: '父母都在江城，一年打两次电话。他每个月往家里寄三百，从不留言。',
-      past: '妹妹走丢那年，是他牵着的。他松了一下手。',
-      flaw: '不会拒绝人',
-      line: '「这单送完就回去。」',
-      open: '第 1 天。\n你在顶楼的隔间醒来。\n斜屋顶压得很低，天窗上全是雨。\n昨天跑完最后一单，你连鞋都没脱。'
+      family: '家里不太管她。她也不太回家。',
+      past: '硬盘里有三百多个视频，最长的一个拍的是后院那棵树，四十分钟。',
+      flaw: '什么都想拍下来',
+      line: '「这楼里有东西，我拍到了。」',
+      open:
+        '第 1 天。\n你在 503 醒来。\n三脚架还架在窗边，补光灯没关。\n昨晚你又拍了一夜——对着后院那棵树。'
     },
     {
-      id: 'zhou',
-      name: '周野',
+      id: 'zhe',
+      name: '阿哲',
       age: 26,
-      role: '修车学徒',
-      from: '临江 · 三号院',
-      fromNote: '八年前从这儿走的，说过不回来',
+      role: '给人修电脑的',
+      from: '本地 · 城南',
+      fromNote: '他叔赵彪给他在这栋楼租了间房',
       home: 'shopup',
-      homeName: '西门旧货铺 · 二楼',
+      homeName: '望安公寓 · 201',
       money: 140,
       mother: 'away',
-      family: '父母都还在，分开了住。谁也不管他，他也乐得没人管。',
-      past: '八年前走的那天，他妈在楼下喊他的名字，他没回头。',
-      flaw: '太要面子',
-      line: '「我就是回来看看。」',
-      open: '第 1 天。\n你在旧货铺二楼醒来。\n楼下堆着别人不要的东西，一件一件，都有主。\n你回来三天了，还没跟任何人说。'
+      family: '父母早走了。跟着叔叔长大，叔叔赌，他就跟着还。',
+      past: '两年前帮人删过一段监控。他没问为什么，也没留备份——那次。',
+      flaw: '谁给钱就帮谁',
+      line: '「我什么都不知道，我就是修电脑的。」',
+      open:
+        '第 1 天。\n你在 201 醒来。\n房间是叔叔租的，家具是别人不要的。\n手机上有七个未接来电，全是他叔打的。'
     }
   ];
 
@@ -6714,12 +6716,12 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
 
   /* ---------------- 地点 ---------------- */
   const PLACES = {
-    room: { name: '出租屋', pal: 'warm', floor: 1, props: ['bed', 'window', 'desk', 'lamp', 'mirror', 'note', 'bag', 'door'], exits: ['hall'] },
-    hall: { name: '四层走廊', pal: 'cold', floor: 4, props: ['neighbor', 'door3', 'stairwin', 'pipe', 'bulb', 'stain', 'down'], exits: ['room', 'stairwell'] },
+    room: { name: '301 室', pal: 'warm', floor: 1, props: ['bed', 'window', 'desk', 'lamp', 'mirror', 'note', 'bag', 'door'], exits: ['hall'] },
+    hall: { name: '三楼走廊', pal: 'cold', floor: 4, props: ['neighbor', 'door3', 'stairwin', 'pipe', 'bulb', 'stain', 'down'], exits: ['room', 'stairwell'] },
     stairwell: { name: '楼梯间', pal: 'cold', floor: 3, props: ['rail', 'window2', 'shoes', 'trash', 'down', 'up'], exits: ['hall', 'lobby'] },
     lobby: { name: '门厅', pal: 'cold', floor: 1, props: ['mailbox', 'notice', 'bike', 'mop', 'out', 'up'], exits: ['stairwell', 'yard'] },
     yard: { name: '院子', pal: 'night', floor: 1, props: ['tree', 'bench', 'tap', 'clothes', 'gate', 'cat'], exits: ['lobby', 'street'] },
-    street: { name: '临江路', pal: 'night', floor: 1, props: ['lamp_s', 'board', 'figure', 'busstop', 'manhole', 'shopfront', 'puddle'], exits: ['yard', 'corner', 'busstop', 'shop'] },
+    street: { name: '望安路', pal: 'night', floor: 1, props: ['lamp_s', 'board', 'figure', 'busstop', 'manhole', 'shopfront', 'puddle'], exits: ['yard', 'corner', 'busstop', 'shop'] },
     corner: { name: '街角', pal: 'night', floor: 1, props: ['phonebooth', 'poster', 'bin', 'vendor', 'alley'], exits: ['street', 'market'] },
     busstop: { name: '公交站', pal: 'night', floor: 1, props: ['sign', 'shelter', 'timetable', 'cig', 'seat'], exits: ['street', 'station'] },
     shop: { name: '便利店', pal: 'cold', floor: 1, props: ['counter', 'shelf', 'fridge', 'boss', 'register', 'magazine', 'doorbell'], exits: ['street', 'noodle'] },
@@ -8284,7 +8286,7 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
   /* ---------------- 起始地：每个人醒来在不同的地方 ---------------- */
   const STARTS = {
     room: {
-      text: '第 1 天，凌晨 4:47。\n你在出租屋醒来。\n窗外的雨下了七天。\n你不记得自己是怎么回来的。',
+      text: '第 1 天，凌晨 4:47。\n你在301 室醒来。\n窗外的雨下了七天。\n你不记得自己是怎么回来的。',
       clue: 4
     },
     clinic: {
@@ -8296,7 +8298,7 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
       clue: 7
     },
     oldhouse: {
-      text: '第 1 天，凌晨 3:38。\n你在西街 17 号的门口醒来。\n门上贴着封条，胶还是湿的。\n你不记得自己什么时候来过。',
+      text: '第 1 天，凌晨五点四十。\n你在望安公寓的三楼醒来。\n走廊那头的 302，门缝底下透出一点光。\n昨天夜里，那间屋里死了一个人。',
       clue: 2
     }
   };
@@ -8322,13 +8324,14 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
     await sleep(700);
 
     const steps = [
-      { scene: null, dim: true, lines: ['十几年前。', '西街 17 号。'], dur: 3400 },
-      { scene: 'oldhouse', lines: ['一个男人死在自己家里。', '四十七刀。'], dur: 4600 },
-      { scene: 'oldhouse', lines: ['案子没破。', '那间屋一直锁着。'], dur: 4200 },
-      { scene: 'room', lines: ['今天凌晨，三点四十。', '同样的手法。'], dur: 4400 },
-      { scene: 'room', lines: ['死者手里攥着一张纸条。', '上面写着：临江路 3 号 402。'], dur: 5000 },
-      { scene: null, lines: ['你住在那儿。'], dur: 3400 },
-      { scene: null, big: true, lines: ['妄'], dur: 3600 },
+      { scene: null, dim: true, lines: ['十四年前。', '妄城 · 望安路 · 望安公寓。'], dur: 3600 },
+      { scene: 'oldinside', lines: ['302 室的门没关严。', '那一夜，这间屋进过六个人。'], dur: 5200 },
+      { scene: 'oldinside', lines: ['他们彼此不知道。'], dur: 3600 },
+      { scene: 'oldinside', lines: ['案子定了。', '六个人，没有一个开口。'], dur: 4400 },
+      { scene: 'oldhouse', lines: ['昨天夜里，同一个门牌号。', '同样的手法。'], dur: 4600 },
+      { scene: 'oldhouse', lines: ['死者手里攥着一枚发卡。', '塑料的，兔子，耳朵上的漆掉了一块。'], dur: 5400 },
+      { scene: null, lines: ['雾从江上爬来了。'], dur: 3600 },
+      { scene: null, big: true, lines: ['妄'], dur: 3400 },
       { scene: null, dim: true, lines: ['每个人都有妄念。', '每个人都有过错。'], dur: 3800 }
     ];
 
@@ -8469,7 +8472,7 @@ Deprecated since v${r}`),console.warn(i))),ty[t]=!0}async function mR(r,t,e=200)
       if ($('#begin')) {
         $('#begin').click();
         await sleep(3200);
-        // 固定从出租屋开始，测试用例才有意义
+        // 固定从301 室开始，测试用例才有意义
         S.scene = 'room';
         renderScene();
         await sleep(1000);
